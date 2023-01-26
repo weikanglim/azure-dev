@@ -228,6 +228,14 @@ func ensureEnvironmentInitialized(
 	if !hasSubID && envSpec.subscription != "" {
 		env.SetSubscriptionId(envSpec.subscription)
 	} else {
+		if _, err := console.Select(ctx, input.ConsoleOptions{
+			Message: "Please select the organization your Azure subscription belongs to:",
+			Options: []string{"Microsoft", "Microsoft Demo", "Live (Personal)"},
+		}); err != nil {
+			return fmt.Errorf("prompt tenant: %w", err)
+		}
+
+		//console.Message(ctx, output.WithWarningFormat("Unable to display subscriptions from Microsoft tenant. To fix this, login with your account in the browser."))
 		subscriptionOptions, defaultSubscription, err := getSubscriptionOptions(ctx, azCli)
 		if err != nil {
 			return err
@@ -316,6 +324,13 @@ func getSubscriptionOptions(ctx context.Context, azCli azcli.AzCli) ([]string, a
 	var defaultSubscription any
 
 	for index, info := range subscriptionInfos {
+		// var domain string
+		// if index > 10 {
+		// 	domain = "Microsoft Demo"
+		// } else {
+		// 	domain = "Microsoft"
+		// }
+		// subscriptionOptions[index] = fmt.Sprintf("%2d. %s (%s) : %s", index+1, info.Name, info.Id, domain)
 		subscriptionOptions[index] = fmt.Sprintf("%2d. %s (%s)", index+1, info.Name, info.Id)
 
 		if info.Id == defaultSubscriptionId {

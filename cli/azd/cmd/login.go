@@ -294,6 +294,13 @@ func (la *loginAction) login(ctx context.Context) error {
 		if _, err := la.authManager.LoginInteractive(ctx, la.flags.redirectPort); err != nil {
 			return fmt.Errorf("logging in: %w", err)
 		}
+
+		if _, err := la.console.Select(ctx, input.ConsoleOptions{
+			Message: "Which organization would you like to log in to?:",
+			Options: []string{"Microsoft", "Live (Personal)", "Microsoft Demo"},
+		}); err != nil {
+			return fmt.Errorf("logging in: %w", err)
+		}
 	}
 
 	return nil
