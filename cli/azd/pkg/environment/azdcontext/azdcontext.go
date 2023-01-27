@@ -55,10 +55,6 @@ func (c *AzdContext) EnvironmentRoot(name string) string {
 	return filepath.Join(c.EnvironmentDirectory(), name)
 }
 
-func (c *AzdContext) GetEnvironmentWorkDirectory(name string) string {
-	return filepath.Join(c.EnvironmentRoot(name), "wd")
-}
-
 func (c *AzdContext) GetInfrastructurePath() string {
 	return filepath.Join(c.ProjectDirectory(), InfraDirectoryName)
 }
