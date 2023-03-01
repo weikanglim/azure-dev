@@ -1,0 +1,22 @@
+
+name: backend-db
+metadata: 
+  template: backend-db@v1
+  features:
+    - name: database
+      prompt: Which type of database?
+      files:
+        - ./infra/app/db-{}.bicep
+      modes:
+        - name: cosmos
+          display: Cosmos DB
+        - name: sql
+          display: Azure SQL DB
+        - name: none
+          display: No, I do not want a database.
+    - name: language
+      from: serviceLanguage
+  values:
+      - name: databaseName
+        prompt: What is the name of your database?
+        type: string
