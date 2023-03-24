@@ -108,3 +108,11 @@ const (
 	// Number of tenants where listing of subscriptions failed
 	AccountSubscriptionsListTenantsFailed = attribute.Key("tenants.failed")
 )
+
+// Error reporting fields
+const (
+	ErrOperation = attribute.Key("error.operation")
+	ErrCode      = attribute.Key("error.code")
+	ErrInner     = attribute.Key("error.inner")
+	ErrDetails   = attribute.Key("error.details")
+)
