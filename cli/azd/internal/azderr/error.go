@@ -5,28 +5,37 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/azure/azure-dev/cli/azd/internal"
-	"github.com/azure/azure-dev/cli/azd/internal/telemetry"
-	"github.com/azure/azure-dev/cli/azd/internal/telemetry/fields"
 )
 
-// A structured error for reporting purposes.
+// A structured error that wraps a standard error.
 type Error struct {
+	// The error that occurred.
+	Err error
 	// The operation being executed when the error occurred.
 	Operation string
-	// The error code of the operation
+	// The error code of the operation.
 	Code string
-	// Inner errors
-	Inner []Error
-	// Details
-	Details interface{}
+	// Details that can be serializable as JSON string.
+	Details json.Marshaler
+
+	// Whether the error has been reported.
+	reported bool
 }
 
-// Service related errors
+// Displays the error message.
+func (e *Error) Error() string {
+	return e.Err.Error()
+}
+
+// Allows unwrapping of the inner error.
+func (e *Error) Unwrap() error {
+	return e.Err
+}
+
+// Service related details
 type ServiceDetails struct {
 	// A developer-friendly name for the service
-	ServiceName string
+	Name string
 	// The HTTP method used for the service
 	Method string
 	// The HTTP status code returned by the service.
@@ -36,33 +45,33 @@ type ServiceDetails struct {
 	CorrelationId string
 	// The resource associated to the HTTP request
 	Resource string
-	// Error code, if unprovided. Defaults from StatusCode.
+	// Error code. If unprovided, defaults from StatusCode.
 	ErrorCode string
 }
 
-func NewArmServiceError(s ServiceDetails, err ...Error) Error {
+func NewArmServiceError(err error, s ServiceDetails) error {
 	code := s.ErrorCode
 	if code == "" {
 		code = http.StatusText(s.StatusCode)
 	}
-	return Error{
+	return &Error{
 		Operation: fmt.Sprintf(
 			"service.%s.%s.%s",
-			s.ServiceName,
+			s.Name,
 			s.Resource,
 			s.Method),
 		Code:    code,
-		Inner:   err,
-		Details: s,
+		Err:     err,
+		Details: &s,
 	}
 }
 
-// Client tooling related errors
+// Client tooling related details
 type ToolDetails struct {
 	// The name of the tool
 	Name string
 	// Command path of the tool
-	Path []string
+	CmdPath []string
 	// The exit code received after executing the tool
 	ExitCode int
 	// Flags set when executing the tool
@@ -72,30 +81,14 @@ type ToolDetails struct {
 	// Operation looks like: client.<tool name>.<cmd path>
 }
 
-func NewToolError(t ToolDetails, err ...Error) Error {
-	return Error{
+func NewToolError(err error, t ToolDetails) error {
+	return &Error{
 		Operation: fmt.Sprintf(
 			"tool.%s.%s",
 			t.Name,
-			strings.ToLower(strings.Join(t.Path, " "))),
+			strings.ToLower(strings.Join(t.CmdPath, " "))),
 		Code:    t.ErrorCode,
-		Inner:   err,
-		Details: t,
+		Err:     err,
+		Details: &t,
 	}
 }
-
-func attachError(s telemetry.Span, e Error) {
-	details, err := json.Marshal(e.Details)
-	if err != nil && internal.IsDevVersion() {
-		panic(err)
-	}
-
-	s.SetAttributes(
-		fields.ErrOperation.String(e.Operation),
-		fields.ErrCode.String(e.Code),
-		fields.ErrDetails.String(string(details)),
-	)
-	s.SetAttributes(fields.ErrOperation.String(e.Operation))
-}
-
-var _ = attachError

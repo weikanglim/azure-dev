@@ -114,5 +114,36 @@ const (
 	ErrOperation = attribute.Key("error.operation")
 	ErrCode      = attribute.Key("error.code")
 	ErrInner     = attribute.Key("error.inner")
+	ErrFrame     = attribute.Key("error.frame")
 	ErrDetails   = attribute.Key("error.details")
+)
+
+// Service related fields
+const (
+	// Service name
+	ServiceName = attribute.Key("service.name")
+	// Service resource being requested
+	ServiceResource = attribute.Key("service.resource")
+	// Correlation ID of the service request
+	ServiceCorrelationId = attribute.Key("service.correlationId")
+	// Method of the service request
+	ServiceMethod = attribute.Key("service.method")
+	// Status code of the service request
+	ServiceStatusCode = attribute.Key("service.statusCode")
+	// Endpoint of the service request
+	ServiceEndpoint = attribute.Key("service.endpoint")
+)
+
+// Tool related fields
+const (
+	// Name of the tool
+	ToolName = attribute.Key("tool.name")
+	// Version of the tool
+	ToolVersion = attribute.Key("tool.version")
+	// Command executed for a given tool.
+	ToolCommand = attribute.Key("tool.command")
+	// Exit code for a given command
+	ToolExitCode = attribute.Key("tool.exitCode")
+	// Flags set when a command is executed for a given tool.
+	ToolFlags = attribute.Key("tool.flags")
 )

@@ -99,7 +99,83 @@ Given that we want the error to be attached to a span, and we want structured er
 1. We need structured errors.
 1. We need to separate error producer from error consumer, so that errors can be attached to any given span.
 
-An implementation then follows:
+To meet number 1, we simply need to define a struct that captures the information we want.
+To meet number 2, there are two approaches:
+
+1. Error can be bubbled up using application-context fields. This currently exists in `telemetry`, with methods like `SetUsageAttributes`. When methods like these are called, the attributes are stored in a package-level that is safe for concurrent use.
+1. Error can be bubbled up using the standard `error` chain.
+
+The problem with approach 1, is that we want the error reporting to be highly flexible. While it is true that today, the error will only be reported close up to `main`, that will evolve.
+
+Thus, we will choose approach 2.
+
+### Error wrapping
+
+To implement approach 2 effectively, we need to understand how we can have a structured error participate in the error wrapping chain.
+
+An `error` in `golang` has these methods commonly defined:
+
+- `Error() string` - Produces a string representation of the error. Required part of `error` interface.
+- `Unwrap() error` - Returns the inner wrapped `error`. When you call `fmt.Errorf`, `go` returns a struct that is suitable for unwrapping. Weak interface.
+- `Unwrap() error[]` - Returns the inner wrapped `error`s. This is new with go1.20. Weak interface.
+
+Thus, we first define a `struct` that contains the fields we're interested about:
+
+```golang
+// A structured error that wraps a standard error.
+type Error struct {
+	// The operation being executed when the error occurred.
+	Operation string
+	// The error code of the operation.
+	Code string
+	// Details that can be serializable as JSON string.
+	Details json.Marshaler
+}
+```
+
+Then, we add the necessary logic to allow `Error` to participate in `error` wrapping chain:
+
+```golang
+// A structured error that wraps a standard error.
+type Error struct {
+	// The error that occurred.
+	Err error
+	// The operation being executed when the error occurred.
+	Operation string
+	// The error code of the operation.
+	Code string
+	// Details that can be serializable as JSON string.
+	Details json.Marshaler
+}
+
+// Displays the error message.
+func (e *Error) Error() string {
+	return e.Err.Error()
+}
+
+// Allows unwrapping of the inner error.
+func (e *Error) Unwrap() error {
+	return e.Err
+}
+
+// This is now valid syntax
+var _ err error = &Error{}
+```
+
+This implementation delegates both `Error()` and `Unwrap()` to the underlying `err`. This means it's effectively invisible in the error chain when formatted.
+
+Now, this allows the error producer to construct an `Error{}` struct that describes an operation, code, and details, alongside with the standard `error` to be displayed to the user.
+
+To consume and report the error, the consumer simply needs to perform `errors.As(err, &Error)` and be able to pull out the error information, attaching it to a telemetry span if needed.
+
+### 
+
+Stack frame:
+
+- root.go -> 
+  - provision.go
+    - service.go
+      - client.go -> returns Error{}
 
 ## We need structured errors
 

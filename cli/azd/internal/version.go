@@ -17,6 +17,16 @@ import (
 // 8a49ae5ae9ab13beeade35f91ad4b4611c2f5574)'"
 var Version = "0.0.0-dev.0 (commit 0000000000000000000000000000000000000000)"
 
+// Returns true if the version is a development release.
+var IsDev = Version == "0.0.0-dev.0 (commit 0000000000000000000000000000000000000000)"
+
+// Returns true if the version is not a production release (latest or daily).
+//
+// This currently relies on checking for specific internal release tags.
+// This can be improved to instead check for any presence of prerelease versioning
+// once the product is GA.
+var IsNonProd = IsDev || strings.Contains(Version, "pr")
+
 const UnknownVersion string = "unknown"
 const UnknownCommit string = "unknown"
 
@@ -27,22 +37,6 @@ type VersionSpec struct {
 type AzdVersionSpec struct {
 	Version string `json:"version"`
 	Commit  string `json:"commit"`
-}
-
-func IsDevVersion() bool {
-	return GetVersionNumber() == "0.0.0-dev.0"
-}
-
-func IsNonProdVersion() bool {
-	if IsDevVersion() {
-		return true
-	}
-
-	// This currently relies on checking for specific internal release tags.
-	// This can be improved to instead check for any presence of prerelease versioning
-	// once the product is GA.
-	ver := GetVersionNumber()
-	return strings.Contains(ver, "pr")
 }
 
 // GetVersionNumber splits the cmd.Version string to get the

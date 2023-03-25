@@ -2,8 +2,10 @@ package middleware
 
 import (
 	"context"
+	"errors"
 
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
+	"github.com/azure/azure-dev/cli/azd/internal/azderr"
 	"github.com/azure/azure-dev/cli/azd/internal/telemetry"
 	"github.com/azure/azure-dev/cli/azd/internal/telemetry/events"
 	"go.opentelemetry.io/otel/codes"
@@ -39,7 +41,12 @@ func (m *TelemetryMiddleware) Run(ctx context.Context, next NextFn) (*actions.Ac
 
 	result, err := next(spanCtx)
 	if err != nil {
-		span.SetStatus(codes.Error, "UnknownError")
+		var errInfo azderr.ErrReporter
+		if errors.As(err, &errInfo) {
+			errInfo.Report(span)
+		} else {
+			span.SetStatus(codes.Error, "UnknownError")
+		}
 	}
 
 	return result, err

@@ -107,7 +107,7 @@ func initialize() (*TelemetrySystem, error) {
 	}
 
 	var connectionString string
-	if internal.IsNonProdVersion() {
+	if internal.IsNonProd {
 		connectionString = devConnectionString
 	} else {
 		connectionString = prodConnectionString
