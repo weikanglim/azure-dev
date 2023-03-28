@@ -98,7 +98,7 @@ func (r *restoreAction) Run(ctx context.Context) (*actions.ActionResult, error) 
 		fmt.Fprintln(
 			r.console.Handles().Stderr,
 			//nolint:Lll
-			output.WithWarningFormat("--service flag is no longer required. Simply run azd deploy <service> instead."))
+			output.WithWarningFormat("WARNING: --service flag is no longer required. Simply run azd deploy <service> instead."))
 	}
 
 	targetServiceName := r.flags.serviceName

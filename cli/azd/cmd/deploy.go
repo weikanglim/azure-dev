@@ -135,10 +135,10 @@ type DeploymentResult struct {
 
 func (d *deployAction) Run(ctx context.Context) (*actions.ActionResult, error) {
 	if d.flags.serviceName != "" {
-		fmt.Println(
+		fmt.Fprintln(
 			d.console.Handles().Stderr,
 			//nolint:Lll
-			output.WithWarningFormat("--service flag is no longer required. Simply run azd deploy <service> instead."))
+			output.WithWarningFormat("WARNING: --service flag is no longer required. Simply run azd deploy <service> instead."))
 	}
 
 	targetServiceName := d.flags.serviceName
