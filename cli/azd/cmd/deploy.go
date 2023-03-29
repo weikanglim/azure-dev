@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
+	"github.com/azure/azure-dev/cli/azd/cmd/middleware"
 	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/account"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
@@ -32,13 +33,6 @@ type deployFlags struct {
 }
 
 func (d *deployFlags) Bind(local *pflag.FlagSet, global *internal.GlobalCommandOptions) {
-	d.bindNonCommon(local, global)
-	d.bindCommon(local, global)
-}
-
-func (d *deployFlags) bindNonCommon(
-	local *pflag.FlagSet,
-	global *internal.GlobalCommandOptions) {
 	local.StringVar(
 		&d.serviceName,
 		"service",
@@ -48,12 +42,6 @@ func (d *deployFlags) bindNonCommon(
 	)
 	//deprecate:flag hide --service
 	_ = local.MarkHidden("service")
-	d.global = global
-}
-
-func (d *deployFlags) bindCommon(local *pflag.FlagSet, global *internal.GlobalCommandOptions) {
-	d.envFlag = &envFlag{}
-	d.envFlag.Bind(local, global)
 }
 
 func (d *deployFlags) setCommon(envFlag *envFlag) {
@@ -61,7 +49,10 @@ func (d *deployFlags) setCommon(envFlag *envFlag) {
 }
 
 func newDeployFlags(cmd *cobra.Command, global *internal.GlobalCommandOptions) *deployFlags {
-	flags := &deployFlags{}
+	flags := &deployFlags{
+		envFlag: newEnvFlag(cmd, global),
+		global:  global,
+	}
 	flags.Bind(cmd.Flags(), global)
 
 	return flags
@@ -78,20 +69,22 @@ func newDeployCmd() *cobra.Command {
 }
 
 type deployAction struct {
-	flags           *deployFlags
-	args            []string
-	projectConfig   *project.ProjectConfig
-	azdCtx          *azdcontext.AzdContext
-	env             *environment.Environment
-	projectManager  project.ProjectManager
-	serviceManager  project.ServiceManager
-	resourceManager project.ResourceManager
-	accountManager  account.Manager
-	azCli           azcli.AzCli
-	formatter       output.Formatter
-	writer          io.Writer
-	console         input.Console
-	commandRunner   exec.CommandRunner
+	flags                    *deployFlags
+	args                     []string
+	projectConfig            *project.ProjectConfig
+	azdCtx                   *azdcontext.AzdContext
+	env                      *environment.Environment
+	projectManager           project.ProjectManager
+	serviceManager           project.ServiceManager
+	resourceManager          project.ResourceManager
+	accountManager           account.Manager
+	azCli                    azcli.AzCli
+	formatter                output.Formatter
+	writer                   io.Writer
+	console                  input.Console
+	commandRunner            exec.CommandRunner
+	middlewareRunner         middleware.MiddlewareContext
+	packageActionInitializer actions.ActionInitializer[*packageAction]
 }
 
 func newDeployAction(
@@ -109,66 +102,49 @@ func newDeployAction(
 	console input.Console,
 	formatter output.Formatter,
 	writer io.Writer,
+	middlewareRunner middleware.MiddlewareContext,
+	packageActionInitializer actions.ActionInitializer[*packageAction],
 ) actions.Action {
 	return &deployAction{
-		flags:           flags,
-		args:            args,
-		projectConfig:   projectConfig,
-		azdCtx:          azdCtx,
-		env:             environment,
-		projectManager:  projectManager,
-		serviceManager:  serviceManager,
-		resourceManager: resourceManager,
-		accountManager:  accountManager,
-		azCli:           azCli,
-		formatter:       formatter,
-		writer:          writer,
-		console:         console,
-		commandRunner:   commandRunner,
+		flags:                    flags,
+		args:                     args,
+		projectConfig:            projectConfig,
+		azdCtx:                   azdCtx,
+		env:                      environment,
+		projectManager:           projectManager,
+		serviceManager:           serviceManager,
+		resourceManager:          resourceManager,
+		accountManager:           accountManager,
+		azCli:                    azCli,
+		formatter:                formatter,
+		writer:                   writer,
+		console:                  console,
+		commandRunner:            commandRunner,
+		middlewareRunner:         middlewareRunner,
+		packageActionInitializer: packageActionInitializer,
 	}
 }
 
 type DeploymentResult struct {
-	Timestamp time.Time                      `json:"timestamp"`
-	Services  []*project.ServiceDeployResult `json:"services"`
+	Timestamp time.Time                                `json:"timestamp"`
+	Services  map[string]*project.ServicePublishResult `json:"services"`
 }
 
 func (d *deployAction) Run(ctx context.Context) (*actions.ActionResult, error) {
-	if d.flags.serviceName != "" {
-		fmt.Println(
-			d.console.Handles().Stderr,
-			//nolint:Lll
-			output.WithWarningFormat("--service flag is no longer required. Simply run azd deploy <service> instead."))
-	}
-
 	targetServiceName := d.flags.serviceName
 	if len(d.args) == 1 {
 		targetServiceName = d.args[0]
 	}
 
-	if targetServiceName != "" && !d.projectConfig.HasService(targetServiceName) {
-		return nil, fmt.Errorf("service name '%s' doesn't exist", targetServiceName)
-	}
-
-	if err := d.projectManager.Initialize(ctx, d.projectConfig); err != nil {
+	packageAction, err := d.packageActionInitializer()
+	packageAction.args = d.args
+	if err != nil {
 		return nil, err
 	}
 
-	// Collect all the tools we will need to do the deployment and validate that
-	// the are installed. When a single project is being deployed, we need just
-	// the tools for that project, otherwise we need the tools from all project.
-	var allTools []tools.ExternalTool
-	for _, svc := range d.projectConfig.Services {
-		if targetServiceName == "" || targetServiceName == svc.Name {
-			serviceTools, err := d.serviceManager.GetRequiredTools(ctx, svc)
-			if err != nil {
-				return nil, fmt.Errorf("failed getting required tools for service %s: %w", svc.Name, err)
-			}
-			allTools = append(allTools, serviceTools...)
-		}
-	}
-
-	if err := tools.EnsureInstalled(ctx, tools.Unique(allTools)...); err != nil {
+	packageOptions := &middleware.Options{CommandPath: "package"}
+	_, err = d.middlewareRunner.RunChildAction(ctx, packageOptions, packageAction)
+	if err != nil {
 		return nil, err
 	}
 
@@ -177,57 +153,68 @@ func (d *deployAction) Run(ctx context.Context) (*actions.ActionResult, error) {
 		Title: "Deploying services (azd deploy)",
 	})
 
-	var svcDeploymentResult *project.ServiceDeployResult
-	var deploymentResults []*project.ServiceDeployResult
+	if d.flags.serviceName != "" {
+		fmt.Fprintln(
+			d.console.Handles().Stderr,
+			//nolint:Lll
+			output.WithWarningFormat("--service flag is no longer required. Simply run azd deploy <service> instead."))
+	}
+
+	if targetServiceName != "" && !d.projectConfig.HasService(targetServiceName) {
+		return nil, fmt.Errorf("service name '%s' doesn't exist", targetServiceName)
+	}
+
+	if err := d.ensureTools(ctx, targetServiceName); err != nil {
+		return nil, err
+	}
+
+	if err := d.projectManager.Initialize(ctx, d.projectConfig); err != nil {
+		return nil, err
+	}
+
+	publishResults := map[string]*project.ServicePublishResult{}
 
 	for _, svc := range d.projectConfig.Services {
-		// Skip this service if both cases are true:
-		// 1. The user specified a service name
-		// 2. This service is not the one the user specified
-		if targetServiceName != "" && svc.Name != targetServiceName {
-			continue
-		}
-
 		stepMessage := fmt.Sprintf("Deploying service %s", svc.Name)
 		d.console.ShowSpinner(ctx, stepMessage, input.Step)
 
-		deployTask := d.serviceManager.Deploy(ctx, svc)
+		// Skip this service if both cases are true:
+		// 1. The user specified a service name
+		// 2. This service is not the one the user specified
+		if targetServiceName != "" && targetServiceName != svc.Name {
+			d.console.StopSpinner(ctx, stepMessage, input.StepSkipped)
+			continue
+		}
 
+		publishTask := d.serviceManager.Publish(ctx, svc, nil)
 		go func() {
-			for progress := range deployTask.Progress() {
-				updatedMessage := fmt.Sprintf("Deploying service %s (%s)", svc.Name, progress.Message)
-				d.console.ShowSpinner(ctx, updatedMessage, input.Step)
+			for publishProgress := range publishTask.Progress() {
+				progressMessage := fmt.Sprintf("Deploying service %s (%s)", svc.Name, publishProgress.Message)
+				d.console.ShowSpinner(ctx, progressMessage, input.Step)
 			}
 		}()
 
-		result, err := deployTask.Await()
-
-		d.console.StopSpinner(ctx, stepMessage, input.GetStepResultFormat(err))
+		publishResult, err := publishTask.Await()
 		if err != nil {
-			return nil, fmt.Errorf("deploying service: %w", err)
+			d.console.StopSpinner(ctx, stepMessage, input.StepFailed)
+			return nil, err
 		}
 
-		svcDeploymentResult = result
-		deploymentResults = append(deploymentResults, svcDeploymentResult)
+		d.console.StopSpinner(ctx, stepMessage, input.StepDone)
+		publishResults[svc.Name] = publishResult
 
-		// report endpoint
-		for _, endpoint := range svcDeploymentResult.Publish.Endpoints {
-			d.console.MessageUxItem(ctx, &ux.Endpoint{Endpoint: endpoint})
-		}
-	}
-
-	if targetServiceName != "" && len(deploymentResults) == 0 {
-		return nil, fmt.Errorf("no services were deployed. Check the specified service name and try again.")
+		// report build outputs
+		d.console.MessageUxItem(ctx, publishResult)
 	}
 
 	if d.formatter.Kind() == output.JsonFormat {
-		aggregateDeploymentResult := DeploymentResult{
+		deployResult := DeploymentResult{
 			Timestamp: time.Now(),
-			Services:  deploymentResults,
+			Services:  publishResults,
 		}
 
-		if fmtErr := d.formatter.Format(aggregateDeploymentResult, d.writer, nil); fmtErr != nil {
-			return nil, fmt.Errorf("deployment result could not be displayed: %w", fmtErr)
+		if fmtErr := d.formatter.Format(deployResult, d.writer, nil); fmtErr != nil {
+			return nil, fmt.Errorf("deploy result could not be displayed: %w", fmtErr)
 		}
 	}
 
@@ -237,6 +224,30 @@ func (d *deployAction) Run(ctx context.Context) (*actions.ActionResult, error) {
 			FollowUp: getResourceGroupFollowUp(ctx, d.formatter, d.azCli, d.projectConfig, d.resourceManager, d.env),
 		},
 	}, nil
+}
+
+func (d *deployAction) ensureTools(ctx context.Context, targetServiceName string) error {
+	// Collect all the tools we will need to do the deployment and validate that
+	// the are installed. When a single project is being deployed, we need just
+	// the tools for that project, otherwise we need the tools from all project.
+	var allTools []tools.ExternalTool
+	for _, svc := range d.projectConfig.Services {
+		if targetServiceName == "" || targetServiceName == svc.Name {
+			serviceTarget, err := d.serviceManager.GetServiceTarget(ctx, svc)
+			if err != nil {
+				return err
+			}
+
+			serviceTools := serviceTarget.RequiredExternalTools(ctx)
+			allTools = append(allTools, serviceTools...)
+		}
+	}
+
+	if err := tools.EnsureInstalled(ctx, tools.Unique(allTools)...); err != nil {
+		return fmt.Errorf("failed getting required tools for project, %w", err)
+	}
+
+	return nil
 }
 
 func getCmdDeployHelpDescription(*cobra.Command) string {
