@@ -170,5 +170,9 @@ func (a *authTokenAction) Run(ctx context.Context) (*actions.ActionResult, error
 		ExpiresOn: contracts.RFC3339Time(token.ExpiresOn),
 	}
 
+	if a.formatter.Kind() == output.NoneFormat {
+		fmt.Fprintf(a.writer, "%s", res.Token)
+		return nil, nil
+	}
 	return nil, a.formatter.Format(res, a.writer, nil)
 }
