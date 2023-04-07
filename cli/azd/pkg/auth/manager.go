@@ -123,7 +123,7 @@ func EnsureLoggedInCredential(ctx context.Context, credential azcore.TokenCreden
 		// where handled errors would be fixed with rerunning login (i.e. token expiry), vs.
 		// unhandled errors where it indicates a setup issue.
 		log.Printf("failed fetching access token: %s", err.Error())
-		return &azcore.AccessToken{}, ErrNoCurrentUser
+		return &azcore.AccessToken{}, err
 	}
 
 	return &token, nil

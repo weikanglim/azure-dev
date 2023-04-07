@@ -235,10 +235,12 @@ func (la *loginAction) Run(ctx context.Context) (*actions.ActionResult, error) {
 	} else if err != nil {
 		return nil, fmt.Errorf("checking auth status: %w", err)
 	} else {
-		if token, err := auth.EnsureLoggedInCredential(ctx, cred); errors.Is(err, auth.ErrNoCurrentUser) {
-			res.Status = contracts.LoginStatusUnauthenticated
-		} else if err != nil {
-			return nil, fmt.Errorf("checking auth status: %w", err)
+		if token, err := auth.EnsureLoggedInCredential(ctx, cred); err != nil {
+			if la.flags.onlyCheckStatus {
+				res.Status = contracts.LoginStatusUnauthenticated
+			} else {
+				return nil, fmt.Errorf("checking auth status after logging in: %w", err)
+			}
 		} else {
 			res.Status = contracts.LoginStatusSuccess
 			res.ExpiresOn = &token.ExpiresOn
