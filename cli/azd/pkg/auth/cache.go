@@ -6,6 +6,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"log"
+	"runtime"
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
@@ -16,6 +18,12 @@ type msalCacheAdapter struct {
 }
 
 func (a *msalCacheAdapter) Replace(ctx context.Context, cache cache.Unmarshaler, cacheHints cache.ReplaceHints) error {
+	pc, _, _, ok := runtime.Caller(1)
+	details := runtime.FuncForPC(pc)
+	if ok && details != nil {
+		log.Printf("Replace(%s): called from %s\n", cacheHints.PartitionKey, details.Name())
+	}
+
 	val, err := a.cache.Read(cacheHints.PartitionKey)
 	if errors.Is(err, errCacheKeyNotFound) {
 		return nil
@@ -31,6 +39,12 @@ func (a *msalCacheAdapter) Replace(ctx context.Context, cache cache.Unmarshaler,
 }
 
 func (a *msalCacheAdapter) Export(ctx context.Context, cache cache.Marshaler, cacheHints cache.ExportHints) error {
+	pc, _, _, ok := runtime.Caller(1)
+	details := runtime.FuncForPC(pc)
+	if ok && details != nil {
+		log.Printf("Export(%s): called from %s\n", cacheHints.PartitionKey, details.Name())
+	}
+
 	val, err := cache.Marshal()
 	if err != nil {
 		return err
