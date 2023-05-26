@@ -215,7 +215,14 @@ func Test_CLI_Up_Down_FuncApp(t *testing.T) {
 	t.Logf("Done\n")
 }
 
+func liveTest(t *testing.T) {
+	if os.Getenv("AZURE_DEV_LIVE_TEST") != "true" {
+		t.Skip("Skipping live test")
+	}
+}
+
 func Test_CLI_Up_Down_ContainerApp(t *testing.T) {
+	liveTest(t)
 	t.Parallel()
 
 	if ci_os := os.Getenv("AZURE_DEV_CI_OS"); ci_os != "" && ci_os != "lin" {
@@ -271,6 +278,8 @@ func Test_CLI_Up_Down_ContainerApp(t *testing.T) {
 }
 
 func Test_CLI_Up_ResourceGroupScope(t *testing.T) {
+	liveTest(t)
+
 	t.Setenv("AZD_ALPHA_ENABLE_RESOURCEGROUPDEPLOYMENTS", "true")
 
 	ctx, cancel := newTestContext(t)

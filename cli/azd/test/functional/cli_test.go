@@ -92,6 +92,8 @@ func TestMain(m *testing.M) {
 }
 
 func Test_CLI_InfraCreateAndDelete(t *testing.T) {
+	liveTest(t)
+
 	// running this test in parallel is ok as it uses a t.TempDir()
 	t.Parallel()
 	ctx, cancel := newTestContext(t)
@@ -152,6 +154,8 @@ func Test_CLI_InfraCreateAndDelete(t *testing.T) {
 }
 
 func Test_CLI_InfraCreateAndDeleteUpperCase(t *testing.T) {
+	liveTest(t)
+
 	// running this test in parallel is ok as it uses a t.TempDir()
 	t.Parallel()
 	ctx, cancel := newTestContext(t)
@@ -401,6 +405,8 @@ func newTestContext(t *testing.T) (context.Context, context.CancelFunc) {
 }
 
 func Test_CLI_InfraCreateAndDeleteResourceTerraform(t *testing.T) {
+	liveTest(t)
+
 	// running this test in parallel is ok as it uses a t.TempDir()
 	t.Parallel()
 	ctx, cancel := newTestContext(t)
@@ -443,6 +449,8 @@ func Test_CLI_InfraCreateAndDeleteResourceTerraform(t *testing.T) {
 }
 
 func Test_CLI_InfraCreateAndDeleteResourceTerraformRemote(t *testing.T) {
+	liveTest(t)
+
 	ctx, cancel := newTestContext(t)
 	defer cancel()
 
