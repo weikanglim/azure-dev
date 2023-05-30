@@ -36,6 +36,7 @@ import (
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/azcli"
 	"github.com/azure/azure-dev/cli/azd/test/azdcli"
 	"github.com/azure/azure-dev/cli/azd/test/mocks/mockaccount"
+	"github.com/azure/azure-dev/cli/azd/test/recording"
 	"github.com/joho/godotenv"
 	"github.com/sethvargo/go-retry"
 	"github.com/stretchr/testify/assert"
@@ -101,6 +102,16 @@ func TestMain(m *testing.M) {
 }
 func Test_CLI_InfraCreateAndDelete(t *testing.T) {
 	liveTest(t)
+	err := recording.Start(t, "cli/azd/test/functional/testdata", nil)
+	require.NoError(t, err)
+
+	recordId := recording.GetRecordingId(t)
+	if recordId == "" {
+		recordId, err = recording.GenerateAlphaNumericID(t, "", 10, true)
+		require.NoError(t, err)
+	}
+
+	defer func() { recording.Stop(t, nil) }()
 
 	// running this test in parallel is ok as it uses a t.TempDir()
 	t.Parallel()
@@ -116,8 +127,9 @@ func Test_CLI_InfraCreateAndDelete(t *testing.T) {
 	cli := azdcli.NewCLI(t)
 	cli.WorkingDirectory = dir
 	cli.Env = append(os.Environ(), "AZURE_LOCATION=eastus2")
+	cli.Env = append(cli.Env, "AZURE_RECORD_ID="+recordId)
 
-	err := copySample(dir, "storage")
+	err = copySample(dir, "storage")
 	require.NoError(t, err, "failed expanding sample")
 
 	_, err = cli.RunCommandWithStdIn(ctx, stdinForInit(envName), "init")
