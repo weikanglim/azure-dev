@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
 	azdinternal "github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/auth"
@@ -177,10 +176,8 @@ func (s *SubscriptionsService) ListTenants(ctx context.Context) ([]armsubscripti
 }
 
 func clientOptions(httpClient httputil.HttpClient, userAgent string) *arm.ClientOptions {
-	return &arm.ClientOptions{
-		ClientOptions: policy.ClientOptions{
-			Transport:       httpClient,
-			PerCallPolicies: []policy.Policy{azsdk.NewUserAgentPolicy(userAgent)},
-		},
-	}
+	return azsdk.NewClientOptionsBuilder().
+		WithTransport(httpClient).
+		WithPerCallPolicy(azsdk.NewUserAgentPolicy(userAgent)).
+		BuildArmClientOptions()
 }
