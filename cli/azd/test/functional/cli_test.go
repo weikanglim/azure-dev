@@ -57,6 +57,9 @@ type config struct {
 	// This can be used to ensure tests that are skipped locally (due to complex setup), always strictly run in CI.
 	CI bool
 
+	// If true, runs the tests in live-mode against real Azure resources.
+	Live bool
+
 	// The client ID to use for live Azure tests.
 	ClientID string
 	// The client secret to use for live Azure tests.
@@ -70,12 +73,18 @@ type config struct {
 }
 
 func (c *config) init() {
+	err := godotenv.Load(".env")
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
+
 	c.CI = os.Getenv("CI") != ""
 	c.ClientID = os.Getenv("AZD_TEST_CLIENT_ID")
 	c.ClientSecret = os.Getenv("AZD_TEST_CLIENT_SECRET")
 	c.TenantID = os.Getenv("AZD_TEST_TENANT_ID")
 	c.SubscriptionID = os.Getenv("AZD_TEST_AZURE_SUBSCRIPTION_ID")
 	c.Location = os.Getenv("AZD_TEST_AZURE_LOCATION")
+	c.Live = os.Getenv("AZD_TEST_LIVE") != ""
 }
 
 func TestMain(m *testing.M) {
@@ -383,8 +392,7 @@ func stdinForInit(envName string) string {
 // stdinForProvision is just enough stdin to accept the defaults for the two prompts
 // from `provision` (for a subscription and location)
 func stdinForProvision() string {
-	return "\n" + // "choose subscription" (we're choosing the default)
-		"\n" // "choose location" (we're choosing the default)
+	return fmt.Sprintf("%s\n%s\n", cfg.SubscriptionID, cfg.Location)
 }
 
 func getTestEnvPath(dir string, envName string) string {

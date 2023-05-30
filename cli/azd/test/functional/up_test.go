@@ -216,7 +216,7 @@ func Test_CLI_Up_Down_FuncApp(t *testing.T) {
 }
 
 func liveTest(t *testing.T) {
-	if os.Getenv("AZURE_DEV_LIVE_TEST") != "true" {
+	if !cfg.Live {
 		t.Skip("Skipping live test")
 	}
 }
