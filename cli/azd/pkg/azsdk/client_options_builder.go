@@ -12,10 +12,6 @@ type ClientOptionsBuilder struct {
 	perRetryPolicies []policy.Policy
 }
 
-func NewClientOptionsBuilder() *ClientOptionsBuilder {
-	return &ClientOptionsBuilder{}
-}
-
 // Sets the underlying transport used for executing HTTP requests
 func (b *ClientOptionsBuilder) WithTransport(transport policy.Transporter) *ClientOptionsBuilder {
 	b.transport = transport

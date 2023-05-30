@@ -1,7 +1,8 @@
 param(
     [string] $Version = (Get-Content "$PSScriptRoot/../version.txt"),
     [string] $SourceVersion = (git rev-parse HEAD),
-    [switch] $CodeCoverageEnabled
+    [switch] $CodeCoverageEnabled,
+    [switch] $RecordModeEnabled
 )
 
 # Remove any previously built binaries
@@ -65,6 +66,10 @@ if ($CodeCoverageEnabled) {
 # cfg: Enable Control Flow Guard (CFG),
 # osusergo: Optimize for OS user accounts
 $tagsFlag = "-tags=cfi,cfg,osusergo"
+
+if ($RecordModeEnabled) {
+    $tagsFlag += ",record"
+}
 
 # ld linker flags
 # -s: Omit symbol table and debug information

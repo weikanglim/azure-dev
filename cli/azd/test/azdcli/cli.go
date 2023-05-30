@@ -102,6 +102,8 @@ func NewCLI(t *testing.T) *CLI {
 			cmd.Args = append(cmd.Args, "-cover")
 		}
 
+		cmd.Args = append(cmd.Args, "-tags=record")
+
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			panic(fmt.Errorf(

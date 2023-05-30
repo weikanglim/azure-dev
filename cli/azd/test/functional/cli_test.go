@@ -99,7 +99,6 @@ func TestMain(m *testing.M) {
 	exitVal := m.Run()
 	os.Exit(exitVal)
 }
-
 func Test_CLI_InfraCreateAndDelete(t *testing.T) {
 	liveTest(t)
 
