@@ -52,6 +52,30 @@ func (r NonTestRecordingOptions) scheme() string {
 	return "http"
 }
 
-func (r NonTestRecordingOptions) baseURL() string {
-	return fmt.Sprintf("%s://%s", r.scheme(), r.host())
+type NonTestRecordingHTTPClient struct {
+	defaultClient *http.Client
+	options       NonTestRecordingOptions
+}
+
+func (c NonTestRecordingHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	reqNew := c.options.ReplaceAuthority(req)
+	resp, err := c.defaultClient.Do(reqNew)
+	resp.Request = req
+	return resp, err
+}
+
+// NewRecordingHTTPClient returns a type that implements `azcore.Transporter`. This will automatically route tests on the `Do` call.
+func NewNonTestRecordingHTTPClient(options *NonTestRecordingOptions) (*NonTestRecordingHTTPClient, error) {
+	if options == nil {
+		options = &NonTestRecordingOptions{UseHTTPS: true}
+	}
+	c, err := GetHTTPClient(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NonTestRecordingHTTPClient{
+		defaultClient: c,
+		options:       *options,
+	}, nil
 }

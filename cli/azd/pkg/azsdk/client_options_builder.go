@@ -4,6 +4,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/azure/azure-dev/cli/azd/test/recording"
 )
 
 type ClientOptionsBuilder struct {
@@ -33,9 +34,13 @@ func (b *ClientOptionsBuilder) WithPerRetryPolicy(policy policy.Policy) *ClientO
 // Builds the az core client options for data plane operations
 // These options include the underlying transport to be used.
 func (b *ClientOptionsBuilder) BuildCoreClientOptions() *azcore.ClientOptions {
+	client, err := recording.NewNonTestRecordingHTTPClient(nil)
+	if err != nil {
+		panic(err)
+	}
 	return &azcore.ClientOptions{
 		// Supports mocking for unit tests
-		Transport: b.transport,
+		Transport: client,
 		// Per request policies to inject into HTTP pipeline
 		PerCallPolicies: b.perCallPolicies,
 		// Per retry policies to inject into HTTP pipeline
@@ -46,10 +51,14 @@ func (b *ClientOptionsBuilder) BuildCoreClientOptions() *azcore.ClientOptions {
 // Builds the ARM module client options for control plane operations
 // These options include the underlying transport to be used.
 func (b *ClientOptionsBuilder) BuildArmClientOptions() *arm.ClientOptions {
+	client, err := recording.NewNonTestRecordingHTTPClient(nil)
+	if err != nil {
+		panic(err)
+	}
 	return &arm.ClientOptions{
 		ClientOptions: policy.ClientOptions{
 			// Supports mocking for unit tests
-			Transport: b.transport,
+			Transport: client,
 			// Per request policies to inject into HTTP pipeline
 			PerCallPolicies: b.perCallPolicies,
 			// Per retry policies to inject into HTTP pipeline
