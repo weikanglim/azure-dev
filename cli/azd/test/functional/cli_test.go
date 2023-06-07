@@ -100,6 +100,47 @@ func TestMain(m *testing.M) {
 	exitVal := m.Run()
 	os.Exit(exitVal)
 }
+
+func Test_CLI_Show(t *testing.T) {
+	// running this test in parallel is ok as it uses a t.TempDir()
+	t.Parallel()
+	ctx, cancel := newTestContext(t)
+	defer cancel()
+
+	err := recording.Start(t, "cli/azd/test/functional/testdata", nil)
+	require.NoError(t, err)
+
+	recordId := recording.GetRecordingId(t)
+	if recordId == "" {
+		recordId, err = recording.GenerateAlphaNumericID(t, "", 10, true)
+		require.NoError(t, err, "an error")
+	}
+
+	// recording.SetDefaultMatcher(t, &recording.SetDefaultMatcherOptions{
+	// 	ExcludedHeaders: []string{"X-Ms-Correlation-Request-Id"},
+	// })
+
+	defer func() {
+		err := recording.Stop(t, nil)
+		if err != nil {
+			t.Fatalf("could not stop recording: %v", err)
+		}
+	}()
+
+	dir := "/home/weilim/repos/playground-azd/minimal"
+	t.Logf("DIR: %s", dir)
+
+	envName := randomEnvName()
+	t.Logf("AZURE_ENV_NAME: %s", envName)
+
+	cli := azdcli.NewCLI(t)
+	cli.WorkingDirectory = dir
+	cli.Env = append(os.Environ(), "AZURE_LOCATION=eastus2")
+	//cli.Env = append(cli.Env, "AZURE_RECORD_ID="+recordId)
+
+	_, err = cli.RunCommand(ctx, "show", "--output", "json")
+	require.NoError(t, err)
+}
 func Test_CLI_InfraCreateAndDelete(t *testing.T) {
 	liveTest(t)
 	err := recording.Start(t, "cli/azd/test/functional/testdata", nil)

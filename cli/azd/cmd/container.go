@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
@@ -38,6 +37,7 @@ import (
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/python"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/swa"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/terraform"
+	"github.com/azure/azure-dev/cli/azd/test/recording"
 	"github.com/benbjohnson/clock"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
@@ -122,7 +122,13 @@ func registerCommonDependencies(container *ioc.NestedContainer) {
 	})
 	container.RegisterSingleton(input.NewConsoleMessaging)
 
-	container.RegisterSingleton(func() httputil.HttpClient { return &http.Client{} })
+	container.RegisterSingleton(func() httputil.HttpClient {
+		client, err := recording.NewNonTestRecordingHTTPClient(nil)
+		if err != nil {
+			panic(err)
+		}
+		return client
+	})
 
 	// Auth
 	container.RegisterSingleton(auth.NewLoggedInGuard)
