@@ -122,7 +122,7 @@ func (c *ZipDeployClient) Deploy(ctx context.Context, appName string, zipFile io
 	}
 
 	response, err := poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
-		Frequency: deployStatusInterval,
+		Frequency: PollFrequency(deployStatusInterval),
 	})
 	if err != nil {
 		return nil, err

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/cognitiveservices/armcognitiveservices"
+	"github.com/azure/azure-dev/cli/azd/pkg/azsdk"
 )
 
 // GetCognitiveAccount finds the cognitive account within a subscription
@@ -39,7 +41,9 @@ func (cli *azCli) PurgeCognitiveAccount(
 		return fmt.Errorf("starting purging cognitive account: %w", err)
 	}
 
-	_, err = poller.PollUntilDone(ctx, nil)
+	_, err = poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
+		Frequency: azsdk.DefaultPollFrequency,
+	})
 	if err != nil {
 		return fmt.Errorf("purging cognitive account: %w", err)
 	}

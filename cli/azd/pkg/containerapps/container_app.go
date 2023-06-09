@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appcontainers/armappcontainers"
 	azdinternal "github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/account"
@@ -236,7 +237,9 @@ func (cas *containerAppService) updateContainerApp(
 		return fmt.Errorf("begin updating ingress traffic: %w", err)
 	}
 
-	_, err = poller.PollUntilDone(ctx, nil)
+	_, err = poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
+		Frequency: azsdk.DefaultPollFrequency,
+	})
 	if err != nil {
 		return fmt.Errorf("polling for container app update completion: %w", err)
 	}

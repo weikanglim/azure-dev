@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appplatform/armappplatform/v2"
 	"github.com/Azure/azure-storage-file-go/azfile"
 	azdinternal "github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/account"
+	"github.com/azure/azure-dev/cli/azd/pkg/azsdk"
 	"github.com/azure/azure-dev/cli/azd/pkg/httputil"
 )
 
@@ -261,7 +263,9 @@ func (ss *springService) createOrUpdateDeployment(
 		return nil, err
 	}
 
-	res, err := poller.PollUntilDone(ctx, nil)
+	res, err := poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
+		Frequency: azsdk.DefaultPollFrequency,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +292,9 @@ func (ss *springService) activeDeployment(
 		return nil, err
 	}
 
-	res, err := poller.PollUntilDone(ctx, nil)
+	res, err := poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
+		Frequency: azsdk.DefaultPollFrequency,
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appconfiguration/armappconfiguration"
+	"github.com/azure/azure-dev/cli/azd/pkg/azsdk"
 	"github.com/azure/azure-dev/cli/azd/pkg/convert"
 )
 
@@ -56,7 +58,9 @@ func (cli *azCli) PurgeAppConfig(ctx context.Context, subscriptionId string, con
 		return fmt.Errorf("starting purging app configuration: %w", err)
 	}
 
-	_, err = poller.PollUntilDone(ctx, nil)
+	_, err = poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
+		Frequency: azsdk.DefaultPollFrequency,
+	})
 	if err != nil {
 		return fmt.Errorf("purging app configuration: %w", err)
 	}

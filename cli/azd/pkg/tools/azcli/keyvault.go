@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
+	"github.com/azure/azure-dev/cli/azd/pkg/azsdk"
 	"github.com/azure/azure-dev/cli/azd/pkg/convert"
 )
 
@@ -102,7 +104,9 @@ func (cli *azCli) PurgeKeyVault(ctx context.Context, subscriptionId string, vaul
 		return fmt.Errorf("starting purging key vault: %w", err)
 	}
 
-	_, err = poller.PollUntilDone(ctx, nil)
+	_, err = poller.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{
+		Frequency: azsdk.DefaultPollFrequency,
+	})
 	if err != nil {
 		return fmt.Errorf("purging key vault: %w", err)
 	}
