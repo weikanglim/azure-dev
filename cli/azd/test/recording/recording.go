@@ -98,7 +98,7 @@ func Start(t *testing.T, opts ...Options) *Session {
 	}
 
 	dir := callingDir(1)
-	name := filepath.Join(dir, "testdata", t.Name())
+	name := filepath.Join(dir, "testdata", "recordings", t.Name())
 	baseName := filepath.Base(name)
 
 	if opt.mode == Unknown {
