@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/exec"
 	"github.com/azure/azure-dev/cli/azd/pkg/input"
@@ -25,6 +26,7 @@ type HooksRunner struct {
 	cwd           string
 	hooks         map[string]*HookConfig
 	env           *environment.Environment
+	globalOpts    *internal.GlobalCommandOptions
 }
 
 // NewHooks creates a new instance of CommandHooks
@@ -36,6 +38,7 @@ func NewHooksRunner(
 	cwd string,
 	hooks map[string]*HookConfig,
 	env *environment.Environment,
+	globalOpts *internal.GlobalCommandOptions,
 ) *HooksRunner {
 	if cwd == "" {
 		osWd, err := os.Getwd()
@@ -53,6 +56,7 @@ func NewHooksRunner(
 		cwd:           cwd,
 		hooks:         hooks,
 		env:           env,
+		globalOpts:    globalOpts,
 	}
 }
 
@@ -130,6 +134,10 @@ func (h *HooksRunner) execHook(ctx context.Context, hookConfig *HookConfig) erro
 	formatter := h.console.GetFormatter()
 	consoleInteractive := formatter == nil || formatter.Kind() == output.NoneFormat
 	scriptInteractive := consoleInteractive && hookConfig.Interactive
+	if h.globalOpts.EnableDebugLogging {
+		// Always show stdout, stderr output when debug logging is enabled
+		scriptInteractive = true
+	}
 
 	// When running in an interactive terminal broadcast a message to the dev to remind them that custom hooks are running.
 	if consoleInteractive {

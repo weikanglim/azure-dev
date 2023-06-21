@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
+	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/convert"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/exec"
@@ -25,6 +26,7 @@ type HooksMiddleware struct {
 	commandRunner     exec.CommandRunner
 	console           input.Console
 	options           *Options
+	globalOpts        *internal.GlobalCommandOptions
 }
 
 // Creates a new instance of the Hooks middleware
@@ -34,6 +36,7 @@ func NewHooksMiddleware(
 	commandRunner exec.CommandRunner,
 	console input.Console,
 	options *Options,
+	globalOpts *internal.GlobalCommandOptions,
 ) Middleware {
 	return &HooksMiddleware{
 		lazyEnv:           env,
@@ -41,6 +44,7 @@ func NewHooksMiddleware(
 		commandRunner:     commandRunner,
 		console:           console,
 		options:           options,
+		globalOpts:        globalOpts,
 	}
 }
 
@@ -91,6 +95,7 @@ func (m *HooksMiddleware) registerCommandHooks(
 		projectConfig.Path,
 		projectConfig.Hooks,
 		env,
+		m.globalOpts,
 	)
 
 	var actionResult *actions.ActionResult
@@ -143,6 +148,7 @@ func (m *HooksMiddleware) registerServiceHooks(
 			service.Path(),
 			service.Hooks,
 			env,
+			m.globalOpts,
 		)
 
 		for hookName, hookConfig := range service.Hooks {

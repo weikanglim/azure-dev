@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
+	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment/azdcontext"
 	"github.com/azure/azure-dev/cli/azd/pkg/exec"
@@ -335,6 +336,7 @@ func runMiddleware(
 		mockContext.CommandRunner,
 		mockContext.Console,
 		runOptions,
+		&internal.GlobalCommandOptions{},
 	)
 
 	result, err := middleware.Run(*mockContext.Context, nextFn)
