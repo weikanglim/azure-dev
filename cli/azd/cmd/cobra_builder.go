@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -190,8 +191,8 @@ func (cb *CobraBuilder) configureActionResolver(cmd *cobra.Command, descriptor *
 }
 
 type docsFlagVal struct {
-	help *bool
-	c    *cobra.Command
+	c       *cobra.Command
+	console func() input.Console
 }
 
 func (p *docsFlagVal) Set(s string) error {
@@ -200,15 +201,19 @@ func (p *docsFlagVal) Set(s string) error {
 	}
 
 	// set help flag to true, then intercept the help function to open browser to docs
-	*p.help = true
+	err := p.c.Flag("help").Value.Set("true")
+	if err != nil {
+		panic(err)
+	}
+	//*p.help = true
 	p.c.SetHelpFunc(func(c *cobra.Command, _ []string) {
-		fmt.Printf("Opened browser to documentation: %s\n", c.CommandPath())
+		p.console().Message(context.Background(), fmt.Sprintf("Opened browser to documentation: %s", c.CommandPath()))
 	})
 	return nil
 }
 
 func (p *docsFlagVal) String() string {
-	return fmt.Sprintf("%t", *p.help)
+	return fmt.Sprintf("%t", p.c.Flag("help").Value)
 }
 
 func (p *docsFlagVal) Type() string {
@@ -220,10 +225,17 @@ func (cb *CobraBuilder) bindCommand(cmd *cobra.Command, descriptor *actions.Acti
 	actionName := createActionName(cmd)
 
 	// Automatically adds a consistent help flag
-	pHelp := cmd.Flags().BoolP("help", "h", false, fmt.Sprintf("Gets help for %s.", cmd.Name()))
+	cmd.Flags().BoolP("help", "h", false, fmt.Sprintf("Gets help for %s.", cmd.Name()))
 
 	// docs flags for all commands
-	f := docsFlagVal{c: cmd, help: pHelp}
+	f := docsFlagVal{c: cmd, console: func() input.Console {
+		var console input.Console
+		err := cb.container.Resolve(&console)
+		if err != nil {
+			panic(err)
+		}
+		return console
+	}}
 	flag := cmd.Flags().VarPF(
 		&f, "docs", "",
 		fmt.Sprintf("Opens the documentation for %s in your web browser.", cmd.CommandPath()))
