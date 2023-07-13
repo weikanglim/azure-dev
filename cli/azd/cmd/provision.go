@@ -142,7 +142,7 @@ func (p *provisionAction) Run(ctx context.Context) (*actions.ActionResult, error
 
 	if err != nil {
 		if p.formatter.Kind() == output.JsonFormat {
-			stateResult, err := p.provisionManager.State(ctx)
+			stateResult, err := p.provisionManager.State(ctx, nil)
 			if err != nil {
 				return nil, fmt.Errorf(
 					"deployment failed and the deployment result is unavailable: %w",
@@ -177,7 +177,7 @@ func (p *provisionAction) Run(ctx context.Context) (*actions.ActionResult, error
 	}
 
 	if p.formatter.Kind() == output.JsonFormat {
-		stateResult, err := p.provisionManager.State(ctx)
+		stateResult, err := p.provisionManager.State(ctx, nil)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"deployment succeeded but the deployment result is unavailable: %w",

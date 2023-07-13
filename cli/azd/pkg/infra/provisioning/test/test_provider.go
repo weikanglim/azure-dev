@@ -64,7 +64,7 @@ func (p *TestProvider) Plan(ctx context.Context) (*DeploymentPlan, error) {
 	}, nil
 }
 
-func (p *TestProvider) State(ctx context.Context) (*StateResult, error) {
+func (p *TestProvider) State(ctx context.Context, options *StateOptions) (*StateResult, error) {
 	// TODO: progress, "Looking up deployment"
 
 	state := State{

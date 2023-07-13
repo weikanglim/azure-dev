@@ -51,8 +51,11 @@ func (m *Manager) Plan(ctx context.Context) (*DeploymentPlan, error) {
 }
 
 // Gets the latest deployment details for the specified scope
-func (m *Manager) State(ctx context.Context) (*StateResult, error) {
-	result, err := m.provider.State(ctx)
+func (m *Manager) State(ctx context.Context, options *StateOptions) (*StateResult, error) {
+	if options == nil {
+		options = &StateOptions{}
+	}
+	result, err := m.provider.State(ctx, options)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving state: %w", err)
 	}
