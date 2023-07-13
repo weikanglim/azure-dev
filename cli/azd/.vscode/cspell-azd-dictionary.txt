@@ -39,6 +39,7 @@ BOOLSLICE
 BUILDID
 BUILDNUMBER
 buildpacks
+byoi
 cflags
 circleci
 cmdsubst
