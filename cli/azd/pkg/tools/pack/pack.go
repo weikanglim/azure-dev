@@ -187,7 +187,14 @@ func (cli *packCli) Build(
 		return err
 	}
 
-	runArgs := exec.NewRunArgs(cli.path, "build", imageName, "--builder", builder, "--path", cwd)
+	runArgs := exec.NewRunArgs(cli.path,
+		"build",
+		imageName,
+		"--builder",
+		builder,
+		"--path",
+		cwd,
+		"-e", "GUNICORN_MODULE_ARG")
 	if buildProgress != nil {
 		runArgs = runArgs.WithStdOut(buildProgress).WithStdErr(buildProgress)
 	}
