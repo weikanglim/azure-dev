@@ -12,6 +12,7 @@ appinsightsexporter
 appinsightsstorage
 appplatform
 appservice
+arget
 armapimanagement
 armappconfiguration
 armappplatform
@@ -142,6 +143,7 @@ servicebus
 setenvs
 snapshotter
 springapp
+sqlserver
 sstore
 sqlserver
 staticcheck

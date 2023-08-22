@@ -8,13 +8,19 @@ import (
 	"testing"
 
 	"github.com/azure/azure-dev/cli/azd/pkg/osutil"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/stretchr/testify/require"
 )
 
 //go:embed testdata/*
 var testDataFs embed.FS
 
+// Verify standard detection for all languages and dependencies.
 func TestDetect(t *testing.T) {
+	dir := t.TempDir()
+	err := copyTestDataDir(t, "**", dir)
+	require.NoError(t, err)
+
 	tests := []struct {
 		name    string
 		options []DetectOption
@@ -41,20 +47,40 @@ func TestDetect(t *testing.T) {
 				},
 				{
 					Language:      JavaScript,
-					Path:          "javascript-frameworks",
+					Path:          "javascript-full",
 					DetectionRule: "Inferred by presence of: package.json",
-					Frameworks: []Framework{
-						Angular,
-						JQuery,
-						React,
-						VueJs,
+					Dependencies: []Dependency{
+						JsAngular,
+						JsJQuery,
+						JsReact,
+						JsVue,
+					},
+					DatabaseDeps: []DatabaseDep{
+						DbMongo,
+						DbMySql,
+						DbPostgres,
+						DbSqlServer,
 					},
 				},
 				{
 					Language:      Python,
 					Path:          "python",
 					DetectionRule: "Inferred by presence of: requirements.txt",
-					RawFrameworks: []string{"leftpad"},
+				},
+				{
+					Language:      Python,
+					Path:          "python-full",
+					DetectionRule: "Inferred by presence of: requirements.txt",
+					Dependencies: []Dependency{
+						PyDjango,
+						PyFastApi,
+						PyFlask,
+					},
+					DatabaseDeps: []DatabaseDep{
+						DbMongo,
+						DbMySql,
+						DbPostgres,
+					},
 				},
 				{
 					Language:      TypeScript,
@@ -63,12 +89,76 @@ func TestDetect(t *testing.T) {
 				},
 			},
 		},
+		{
+			"IncludeExcludeLanguages",
+			[]DetectOption{
+				WithDotNet(),
+				WithJava(),
+				WithJavaScript(),
+				WithoutJavaScript(),
+			},
+			[]Project{
+				{
+					Language:      DotNet,
+					Path:          "dotnet",
+					DetectionRule: "Inferred by presence of: program.cs, dotnettestapp.csproj",
+				},
+				{
+					Language:      Java,
+					Path:          "java",
+					DetectionRule: "Inferred by presence of: pom.xml",
+				},
+			},
+		},
+		{
+			"ExcludeLanguages",
+			[]DetectOption{
+				WithoutJavaScript(),
+				WithoutPython(),
+			},
+			[]Project{
+				{
+					Language:      DotNet,
+					Path:          "dotnet",
+					DetectionRule: "Inferred by presence of: program.cs, dotnettestapp.csproj",
+				},
+				{
+					Language:      Java,
+					Path:          "java",
+					DetectionRule: "Inferred by presence of: pom.xml",
+				},
+			},
+		},
+		{
+			"ExcludePatterns",
+			[]DetectOption{
+				WithExcludePatterns([]string{
+					"**/*-full",
+					"**/javascript",
+					"typescript",
+				}, false),
+			},
+			[]Project{
+				{
+					Language:      DotNet,
+					Path:          "dotnet",
+					DetectionRule: "Inferred by presence of: program.cs, dotnettestapp.csproj",
+				},
+				{
+					Language:      Java,
+					Path:          "java",
+					DetectionRule: "Inferred by presence of: pom.xml",
+				},
+				{
+					Language:      Python,
+					Path:          "python",
+					DetectionRule: "Inferred by presence of: requirements.txt",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := t.TempDir()
-			err := copyTestDataDir(t, "**", dir)
-			require.NoError(t, err)
 			projects, err := Detect(dir, tt.options...)
 			require.NoError(t, err)
 
@@ -82,6 +172,53 @@ func TestDetect(t *testing.T) {
 	}
 }
 
+// Verify docker detection.
+func TestDetectDocker(t *testing.T) {
+	dir := t.TempDir()
+	err := copyTestDataDir(t, "**/dotnet/**", dir)
+	require.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dotnet", "Dockerfile"), []byte{}, 0600)
+	require.NoError(t, err)
+
+	projects, err := Detect(dir)
+	require.NoError(t, err)
+
+	require.Len(t, projects, 1)
+	require.Equal(t, projects[0], Project{
+		Language:      DotNet,
+		Path:          filepath.Join(dir, "dotnet"),
+		DetectionRule: "Inferred by presence of: program.cs, dotnettestapp.csproj",
+		Docker: &Docker{
+			Path: filepath.Join(dir, "dotnet", "Dockerfile"),
+		},
+	})
+}
+
+// Verifies detection of nested projects.
+func TestDetectNested(t *testing.T) {
+	dir := t.TempDir()
+
+	// Use 'src' under root to create further nesting
+	src := filepath.Join(dir, "src")
+	err := copyTestDataDir(t, "**/dotnet/**", src)
+	require.NoError(t, err)
+
+	// nested directory, but is skipped because of dotnet being one level up
+	err = copyTestDataDir(t, "**/javascript/**", filepath.Join(src, "dotnet"))
+	require.NoError(t, err)
+
+	projects, err := Detect(dir)
+	require.NoError(t, err)
+
+	require.Len(t, projects, 1)
+	require.Equal(t, projects[0], Project{
+		Language:      DotNet,
+		Path:          filepath.Join(src, "dotnet"),
+		DetectionRule: "Inferred by presence of: program.cs, dotnettestapp.csproj",
+	})
+}
+
 func copyTestDataDir(t *testing.T, glob string, dst string) error {
 	root := "testdata"
 	return fs.WalkDir(testDataFs, root, func(name string, d fs.DirEntry, err error) error {
@@ -90,7 +227,17 @@ func copyTestDataDir(t *testing.T, glob string, dst string) error {
 		if err != nil {
 			return err
 		}
-		targetPath := filepath.Join(dst, name[len(root):])
+		rel := name[len(root):]
+		match, err := doublestar.Match(glob, rel)
+		if err != nil {
+			return err
+		}
+
+		if !match {
+			return nil
+		}
+
+		targetPath := filepath.Join(dst, rel)
 
 		if d.IsDir() {
 			return os.MkdirAll(targetPath, osutil.PermissionDirectory)

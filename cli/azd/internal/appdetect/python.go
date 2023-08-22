@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
 
 type PythonDetector struct {
 }
 
-func (pd *PythonDetector) Type() ProjectType {
+func (pd *PythonDetector) Language() Language {
 	return Python
 }
 
@@ -33,30 +34,48 @@ func (pd *PythonDetector) DetectProject(path string, entries []fs.DirEntry) (*Pr
 			}
 
 			scanner := bufio.NewScanner(file)
+			databaseDepMap := map[DatabaseDep]struct{}{}
+
 			for scanner.Scan() {
 				split := strings.Split(scanner.Text(), "==")
 				if len(split) < 1 {
 					continue
 				}
 
-				module := strings.TrimSpace(split[0])
+				// pip is case insensitive: PEP 426
+				// https://peps.python.org/pep-0426/#name
+				module := strings.ToLower(strings.TrimSpace(split[0]))
 				switch module {
-				case "flask_mysqldb", "mysqlclient":
-					project.Frameworks = append(project.Frameworks, DbMySql)
-				case "psycopg2", "psycopg2-binary":
-					project.Frameworks = append(project.Frameworks, DbPostgres)
-				case "pymongo", "beanie":
-					project.Frameworks = append(project.Frameworks, DbMongo)
+				case "fastapi":
+					project.Dependencies = append(project.Dependencies, PyFastApi)
+				case "flask":
+					project.Dependencies = append(project.Dependencies, PyFlask)
+				case "django":
+					project.Dependencies = append(project.Dependencies, PyDjango)
 				}
 
-				project.RawFrameworks = append(project.RawFrameworks, module)
+				switch module {
+				case "flask_mysqldb", "mysqlclient":
+					databaseDepMap[DbMySql] = struct{}{}
+				case "psycopg2", "psycopg2-binary":
+					databaseDepMap[DbPostgres] = struct{}{}
+				case "pymongo", "beanie":
+					databaseDepMap[DbMongo] = struct{}{}
+				}
 			}
 
 			if err := file.Close(); err != nil {
 				return nil, err
 			}
 
-			slices.SortFunc(project.Frameworks, func(a, b Framework) bool {
+			if len(databaseDepMap) > 0 {
+				project.DatabaseDeps = maps.Keys(databaseDepMap)
+				slices.SortFunc(project.DatabaseDeps, func(a, b DatabaseDep) bool {
+					return string(a) < string(b)
+				})
+			}
+
+			slices.SortFunc(project.Dependencies, func(a, b Dependency) bool {
 				return string(a) < string(b)
 			})
 

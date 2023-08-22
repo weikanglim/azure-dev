@@ -7,18 +7,18 @@ import (
 	"path/filepath"
 	"strings"
 
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
 
 type PackagesJson struct {
 	Dependencies map[string]string `json:"dependencies"`
-	//DevDependencies map[string]string `json:"devDependencies"`
 }
 
 type JavaScriptDetector struct {
 }
 
-func (nd *JavaScriptDetector) Type() ProjectType {
+func (nd *JavaScriptDetector) Language() Language {
 	return JavaScript
 }
 
@@ -42,30 +42,44 @@ func (nd *JavaScriptDetector) DetectProject(path string, entries []fs.DirEntry) 
 				return nil, err
 			}
 
+			angularAdded := false
+			databaseDepMap := map[DatabaseDep]struct{}{}
+
 			for dep := range packagesJson.Dependencies {
 				switch dep {
 				case "react":
-					project.Frameworks = append(project.Frameworks, React)
+					project.Dependencies = append(project.Dependencies, JsReact)
 				case "jquery":
-					project.Frameworks = append(project.Frameworks, JQuery)
+					project.Dependencies = append(project.Dependencies, JsJQuery)
 				case "vue":
-					project.Frameworks = append(project.Frameworks, VueJs)
-				case "mysql":
-					project.Frameworks = append(project.Frameworks, DbMySql)
-				case "mongodb":
-					project.Frameworks = append(project.Frameworks, DbMongo)
-				case "pg-promise":
-					project.Frameworks = append(project.Frameworks, DbPostgres)
-				case "tedious":
-					project.Frameworks = append(project.Frameworks, DbSqlServer)
+					project.Dependencies = append(project.Dependencies, JsVue)
 				default:
-					if strings.HasPrefix(dep, "@angular") {
-						project.Frameworks = append(project.Frameworks, Angular)
+					if strings.HasPrefix(dep, "@angular") && !angularAdded {
+						project.Dependencies = append(project.Dependencies, JsAngular)
+						angularAdded = true
 					}
+				}
+
+				switch dep {
+				case "mysql":
+					databaseDepMap[DbMySql] = struct{}{}
+				case "mongodb":
+					databaseDepMap[DbMongo] = struct{}{}
+				case "pg-promise":
+					databaseDepMap[DbPostgres] = struct{}{}
+				case "tedious":
+					databaseDepMap[DbSqlServer] = struct{}{}
 				}
 			}
 
-			slices.SortFunc(project.Frameworks, func(a, b Framework) bool {
+			if len(databaseDepMap) > 0 {
+				project.DatabaseDeps = maps.Keys(databaseDepMap)
+				slices.SortFunc(project.DatabaseDeps, func(a, b DatabaseDep) bool {
+					return string(a) < string(b)
+				})
+			}
+
+			slices.SortFunc(project.Dependencies, func(a, b Dependency) bool {
 				return string(a) < string(b)
 			})
 
