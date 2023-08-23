@@ -82,8 +82,8 @@ type ServiceSpec struct {
 	DbCosmos   *DatabaseCosmos
 }
 
-func supportedLanguages() []appdetect.ProjectType {
-	return []appdetect.ProjectType{
+func supportedLanguages() []appdetect.Language {
+	return []appdetect.Language{
 		appdetect.DotNet,
 		appdetect.Java,
 		appdetect.JavaScript,
@@ -92,7 +92,7 @@ func supportedLanguages() []appdetect.ProjectType {
 	}
 }
 
-func mapLanguage(l appdetect.ProjectType) project.ServiceLanguageKind {
+func mapLanguage(l appdetect.Language) project.ServiceLanguageKind {
 	switch l {
 	case appdetect.Python:
 		return project.ServiceLanguagePython
@@ -109,17 +109,17 @@ func mapLanguage(l appdetect.ProjectType) project.ServiceLanguageKind {
 	}
 }
 
-func supportedFrameworks() []appdetect.Framework {
-	return []appdetect.Framework{
-		appdetect.Angular,
-		appdetect.JQuery,
-		appdetect.VueJs,
-		appdetect.React,
+func supportedFrameworks() []appdetect.Dependency {
+	return []appdetect.Dependency{
+		appdetect.JsAngular,
+		appdetect.JsJQuery,
+		appdetect.JsVue,
+		appdetect.JsReact,
 	}
 }
 
-func supportedDatabases() []appdetect.Framework {
-	return []appdetect.Framework{
+func supportedDatabases() []appdetect.DatabaseDep {
+	return []appdetect.DatabaseDep{
 		appdetect.DbMongo,
 		appdetect.DbPostgres,
 	}
@@ -127,7 +127,7 @@ func supportedDatabases() []appdetect.Framework {
 
 func projectDisplayName(p appdetect.Project) string {
 	name := p.Language.Display()
-	for _, framework := range p.Frameworks {
+	for _, framework := range p.Dependencies {
 		if framework.IsWebUIFramework() {
 			name = framework.Display()
 		}
@@ -209,6 +209,25 @@ func (i *Initializer) InitializeInfra(
 	wd := azdCtx.ProjectDirectory()
 	i.console.Message(ctx, "")
 	title := "Scanning app code in current directory"
+	// Prioritize src directory if it exists
+	sourceDir := filepath.Join(wd, "src")
+	projects := []appdetect.Project{}
+	if ent, err := os.Stat(sourceDir); err == nil && ent.IsDir() {
+		prj, err := appdetect.Detect(sourceDir)
+		if err == nil && len(prj) > 0 {
+			projects = prj
+		}
+	}
+
+	if len(projects) == 0 {
+		prj, err := appdetect.Detect(wd)
+		if err != nil {
+			return err
+		}
+
+		projects = prj
+	}
+
 	i.console.ShowSpinner(ctx, title, input.Step)
 	projects, err := appdetect.Detect(wd)
 	time.Sleep(1 * time.Second)
@@ -219,12 +238,10 @@ func (i *Initializer) InitializeInfra(
 		return err
 	}
 
-	detectedDbs := make(map[appdetect.Framework]EntryKind)
+	detectedDbs := make(map[appdetect.DatabaseDep]EntryKind)
 	for _, project := range projects {
-		for _, framework := range project.Frameworks {
-			if framework.IsDatabaseDriver() {
-				detectedDbs[framework] = EntryKindDetected
-			}
+		for _, dbType := range project.DatabaseDeps {
+			detectedDbs[dbType] = EntryKindDetected
 		}
 	}
 
@@ -331,7 +348,7 @@ confirmDetection:
 				languages := supportedLanguages()
 				frameworks := supportedFrameworks()
 				allDbs := supportedDatabases()
-				databases := make([]appdetect.Framework, 0, len(allDbs))
+				databases := make([]appdetect.DatabaseDep, 0, len(allDbs))
 				for _, db := range allDbs {
 					if _, ok := detectedDbs[db]; !ok {
 						databases = append(databases, db)
@@ -370,36 +387,37 @@ confirmDetection:
 
 				s := appdetect.Project{}
 				switch entries[entIdx].(type) {
-				case appdetect.ProjectType:
-					s.Language = entries[entIdx].(appdetect.ProjectType)
-				case appdetect.Framework:
-					framework := entries[entIdx].(appdetect.Framework)
-					if framework.IsDatabaseDriver() {
-						detectedDbs[framework] = EntryKindManual
+				case appdetect.Language:
+					s.Language = entries[entIdx].(appdetect.Language)
+				case appdetect.DatabaseDep:
+					dbDep := entries[entIdx].(appdetect.DatabaseDep)
+					detectedDbs[dbDep] = EntryKindManual
 
-						selection := make([]string, 0, len(projects))
-						for _, prj := range projects {
-							selection = append(selection,
-								fmt.Sprintf("%s\t[%s]", projectDisplayName(prj), filepath.Base(prj.Path)))
-						}
+					selection := make([]string, 0, len(projects))
+					for _, prj := range projects {
+						selection = append(selection,
+							fmt.Sprintf("%s\t[%s]", projectDisplayName(prj), filepath.Base(prj.Path)))
+					}
 
-						selection, err = tabWrite(selection, 3)
-						if err != nil {
-							return err
-						}
+					selection, err = tabWrite(selection, 3)
+					if err != nil {
+						return err
+					}
 
-						idx, err := i.console.Select(ctx, input.ConsoleOptions{
-							Message: "Select the service that uses this database",
-							Options: selection,
-						})
-						if err != nil {
-							return err
-						}
+					idx, err := i.console.Select(ctx, input.ConsoleOptions{
+						Message: "Select the service that uses this database",
+						Options: selection,
+					})
+					if err != nil {
+						return err
+					}
 
-						projects[idx].Frameworks = append(projects[idx].Frameworks, framework)
-						continue confirmDetection
-					} else if framework.Language() != "" {
-						s.Frameworks = []appdetect.Framework{framework}
+					projects[idx].DatabaseDeps = append(projects[idx].DatabaseDeps, dbDep)
+					continue confirmDetection
+				case appdetect.Dependency:
+					framework := entries[entIdx].(appdetect.Dependency)
+					if framework.Language() != "" {
+						s.Dependencies = []appdetect.Dependency{framework}
 						s.Language = framework.Language()
 					}
 				default:
@@ -428,7 +446,7 @@ confirmDetection:
 						}
 						if confirm {
 							projects[idx].Language = s.Language
-							projects[idx].Frameworks = s.Frameworks
+							projects[idx].Dependencies = s.Dependencies
 							projects[idx].DetectionRule = string(EntryKindModified)
 						} else {
 							revision = false
@@ -610,18 +628,18 @@ confirmDetection:
 			// }
 		}
 
-		for _, framework := range project.Frameworks {
-			if framework.IsDatabaseDriver() {
-				switch framework {
-				case appdetect.DbMongo:
-					serviceSpec.DbCosmos = spec.DbCosmos
-				case appdetect.DbPostgres:
-					serviceSpec.DbPostgres = spec.DbPostgres
-				}
-			}
-
+		for _, framework := range project.Dependencies {
 			if framework.IsWebUIFramework() {
 				serviceSpec.Frontend = &Frontend{}
+			}
+		}
+
+		for _, db := range project.DatabaseDeps {
+			switch db {
+			case appdetect.DbMongo:
+				serviceSpec.DbCosmos = spec.DbCosmos
+			case appdetect.DbPostgres:
+				serviceSpec.DbPostgres = spec.DbPostgres
 			}
 		}
 		spec.Services = append(spec.Services, serviceSpec)

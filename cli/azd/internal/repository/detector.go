@@ -47,12 +47,12 @@ func DetectionToConfig(root string, projects []appdetect.Project) (project.Proje
 			entrypoint := ""
 			module := ""
 			if svc.Language == project.ServiceLanguagePython {
-				mapped := map[string]struct{}{}
-				for _, f := range prj.RawFrameworks {
+				mapped := map[appdetect.Dependency]struct{}{}
+				for _, f := range prj.Dependencies {
 					mapped[f] = struct{}{}
 				}
 
-				if _, ok := mapped["Django"]; ok {
+				if _, ok := mapped[appdetect.PyDjango]; ok {
 					de, err := os.ReadDir(prj.Path)
 					if err != nil {
 						return project.ProjectConfig{}, err
@@ -150,13 +150,13 @@ func DetectionToConfig(root string, projects []appdetect.Project) (project.Proje
 				}
 			}
 
-			for _, frwk := range prj.Frameworks {
+			for _, frwk := range prj.Dependencies {
 				switch frwk {
-				case appdetect.React:
+				case appdetect.JsReact:
 					svc.OutputPath = "build"
-				case appdetect.Angular, appdetect.VueJs:
+				case appdetect.JsAngular, appdetect.JsVue:
 					svc.OutputPath = "dist"
-				case appdetect.JQuery:
+				case appdetect.JsJQuery:
 					svc.OutputPath = "."
 				}
 			}
