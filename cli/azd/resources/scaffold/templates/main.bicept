@@ -34,39 +34,19 @@ resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   tags: tags
 }
 
-module monitoring './shared/monitoring.bicep' = {
+module monitoring './core/monitor/monitoring.bicep' = {
   name: 'monitoring'
   params: {
     location: location
     tags: tags
     logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
     applicationInsightsName: '${abbrs.insightsComponents}${resourceToken}'
+    applicationInsightsDashboardName: '${abbrs.portalDashboards}${resourceToken}'
   }
   scope: rg
 }
 
-module dashboard './shared/dashboard-web.bicep' = {
-  name: 'dashboard'
-  params: {
-    name: '${abbrs.portalDashboards}${resourceToken}'
-    applicationInsightsName: monitoring.outputs.applicationInsightsName
-    location: location
-    tags: tags
-  }
-  scope: rg
-}
-
-module registry './shared/registry.bicep' = {
-  name: 'registry'
-  params: {
-    location: location
-    tags: tags
-    name: '${abbrs.containerRegistryRegistries}${resourceToken}'
-  }
-  scope: rg
-}
-
-module keyVault './shared/keyvault.bicep' = {
+module keyVault './core/security/keyvault.bicep' = {
   name: 'keyvault'
   params: {
     location: location
@@ -76,16 +56,19 @@ module keyVault './shared/keyvault.bicep' = {
   scope: rg
 }
 
-module appsEnv './shared/apps-env.bicep' = {
-  name: 'apps-env'
+// Container apps host (including container registry)
+module containerApps './core/host/container-apps.bicep' = {
+  name: 'container-apps'
+  scope: rg
   params: {
-    name: '${abbrs.appManagedEnvironments}${resourceToken}'
+    name: 'app'
     location: location
     tags: tags
-    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    containerAppsEnvironmentName: '${abbrs.appManagedEnvironments}${resourceToken}'
+    containerRegistryName: '${abbrs.containerRegistryRegistries}${resourceToken}'
     logAnalyticsWorkspaceName: monitoring.outputs.logAnalyticsWorkspaceName
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
   }
-  scope: rg
 }
 {{- if (or .DbCosmosMongo .DbPostgres)}}
 
@@ -133,8 +116,8 @@ module {{bicepName .Name}} './app/{{.Name}}.bicep' = {
     tags: tags
     identityName: '${abbrs.managedIdentityUserAssignedIdentities}{{containerAppName .Name}}-${resourceToken}'
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    containerAppsEnvironmentName: appsEnv.outputs.name
-    containerRegistryName: registry.outputs.name
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+    containerRegistryName: containerApps.outputs.registryName
     exists: {{bicepName .Name}}Exists
     {{- if .DbCosmosMongo}}
     cosmosDbConnectionString: vault.getSecret(cosmosDb.outputs.connectionStringKey)
@@ -155,7 +138,7 @@ module {{bicepName .Name}} './app/{{.Name}}.bicep' = {
     {{- if (and .Backend .Backend.Frontends)}}
     allowedOrigins: [
       {{- range .Backend.Frontends}}
-      'https://${abbrs.appContainerApps}{{containerAppName .Name}}-${resourceToken}.${appsEnv.outputs.domain}'
+      'https://${abbrs.appContainerApps}{{containerAppName .Name}}-${resourceToken}.${containerApps.outputs.defaultDomain}'
       {{- end}}
     ]
     {{- end}}
@@ -164,5 +147,5 @@ module {{bicepName .Name}} './app/{{.Name}}.bicep' = {
 }
 {{- end}}
 
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.outputs.loginServer
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerApps.outputs.registryLoginServer
 {{ end}}
