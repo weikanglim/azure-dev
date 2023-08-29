@@ -40,6 +40,7 @@ import (
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/kubectl"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/maven"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/npm"
+	"github.com/azure/azure-dev/cli/azd/pkg/tools/pack"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/python"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/swa"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools/terraform"
@@ -313,6 +314,7 @@ func registerCommonDependencies(container *ioc.NestedContainer) {
 	container.RegisterSingleton(maven.NewMavenCli)
 	container.RegisterSingleton(npm.NewNpmCli)
 	container.RegisterSingleton(python.NewPythonCli)
+	container.RegisterSingleton(pack.NewPackCli)
 	container.RegisterSingleton(swa.NewSwaCli)
 	container.RegisterSingleton(terraform.NewTerraformCli)
 
