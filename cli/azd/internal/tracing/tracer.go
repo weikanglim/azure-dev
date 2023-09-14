@@ -5,6 +5,7 @@ package tracing
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/azure/azure-dev/cli/azd/internal/tracing/baggage"
 	"go.opentelemetry.io/otel/codes"
@@ -31,10 +32,12 @@ type wrapperTracer struct {
 func (w *wrapperTracer) Start(
 	ctx context.Context, spanName string, opts ...trace.SpanStartOption) (context.Context, Span) {
 	ctx, span := w.tracer.Start(ctx, spanName, opts...)
+	wrapper := &wrapperSpan{span}
+
 	// Propagate any baggage in the current context
 	baggage := baggage.BaggageFromContext(ctx)
-	span.SetAttributes(baggage.Attributes()...)
-	return ctx, &wrapperSpan{span}
+	wrapper.SetAttributes(baggage.Attributes()...)
+	return ctx, wrapper
 }
 
 // redefinedSpan is a slightly modified version of trace.Span.
@@ -99,7 +102,7 @@ type wrapperSpan struct {
 // is called. Therefore, updates to the Span are not allowed after this
 // method has been called.
 func (s *wrapperSpan) End(options ...trace.SpanEndOption) {
-	s.span.SetAttributes(GetGlobalAttributes()...)
+	s.SetAttributes(GetGlobalAttributes()...)
 	s.span.End(options...)
 }
 
@@ -137,11 +140,32 @@ func (s *wrapperSpan) SetName(name string) {
 	s.span.SetName(name)
 }
 
+var secretRedaction = regexp.MustCompile(`(?i:key|token|sig|secret|signature|password|passwd|pwd|android:value)[^a-zA-Z0-9]`)
+
 // SetAttributes sets kv as attributes of the Span. If a key from kv
 // already exists for an attribute of the Span it will be overwritten with
 // the value contained in kv.
 func (s *wrapperSpan) SetAttributes(kv ...attribute.KeyValue) {
+	sanitize(kv)
 	s.span.SetAttributes(kv...)
+}
+
+func sanitize(kv []attribute.KeyValue) {
+	for i := range kv {
+		switch kv[i].Value.Type() {
+		case attribute.STRING:
+			if secretRedaction.MatchString(kv[i].Value.AsString()) {
+				kv[i].Value = attribute.StringValue("<REDACTED: secret>")
+			}
+		case attribute.STRINGSLICE:
+			value := kv[i].Value.AsStringSlice()
+			for j := range value {
+				if secretRedaction.MatchString(value[j]) {
+					value[j] = "<REDACTED: secret>"
+				}
+			}
+		}
+	}
 }
 
 // TracerProvider returns a TracerProvider that can be used to generate

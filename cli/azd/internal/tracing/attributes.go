@@ -19,8 +19,16 @@ func SetBaggageInContext(ctx context.Context, attributes ...attribute.KeyValue) 
 
 // SetAttributesInContext sets the given attributes for the current running span.
 func SetAttributesInContext(ctx context.Context, attributes ...attribute.KeyValue) {
-	runningSpan := trace.SpanFromContext(ctx)
+	runningSpan := SpanFromContext(ctx)
 	runningSpan.SetAttributes(attributes...)
+}
+
+// SpanFromContext returns the current running span from the given context.
+//
+// If no Span is currently set in ctx an implementation of a Span that
+// performs no operations is returned.
+func SpanFromContext(ctx context.Context) Span {
+	return &wrapperSpan{trace.SpanFromContext(ctx)}
 }
 
 // Attributes that are global and set on all events
