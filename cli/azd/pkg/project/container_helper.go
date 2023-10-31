@@ -94,7 +94,7 @@ func (ch *ContainerHelper) Deploy(
 	ctx context.Context,
 	serviceConfig *ServiceConfig,
 	packageOutput *ServicePackageResult,
-	targetResource *environment.TargetResource,
+	subscriptionId string,
 ) *async.TaskWithProgress[*ServiceDeployResult, ServiceProgress] {
 	return async.RunTaskWithProgress(
 		func(task *async.TaskContextWithProgress[*ServiceDeployResult, ServiceProgress]) {
@@ -132,7 +132,7 @@ func (ch *ContainerHelper) Deploy(
 
 			log.Printf("logging into container registry '%s'\n", loginServer)
 			task.SetProgress(NewServiceProgress("Logging into container registry"))
-			err = ch.containerRegistryService.Login(ctx, targetResource.SubscriptionId(), loginServer)
+			err = ch.containerRegistryService.Login(ctx, subscriptionId, loginServer)
 			if err != nil {
 				task.SetError(err)
 				return

@@ -5,8 +5,12 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/azure/azure-dev/cli/azd/pkg/async"
 	"github.com/azure/azure-dev/cli/azd/pkg/azure"
@@ -14,6 +18,12 @@ import (
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/infra"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools"
+)
+
+const (
+	cManifestRoot         = "manifest"
+	cManifestTemplateFile = "containerApp.tmpl.yaml"
+	cManifestFile         = "containerApp.yaml"
 )
 
 type containerAppTarget struct {
@@ -25,9 +35,6 @@ type containerAppTarget struct {
 }
 
 // NewContainerAppTarget creates the container app service target.
-//
-// The target resource can be partially filled with only ResourceGroupName, since container apps
-// can be provisioned during deployment.
 func NewContainerAppTarget(
 	env *environment.Environment,
 	envManager environment.Manager,
@@ -72,6 +79,8 @@ func (at *containerAppTarget) Package(
 }
 
 // Deploys service container images to ACR and provisions the container app service.
+// The target resource can be partially filled with only ResourceGroupName, since container apps
+// can be provisioned during deployment.
 func (at *containerAppTarget) Deploy(
 	ctx context.Context,
 	serviceConfig *ServiceConfig,
@@ -80,13 +89,52 @@ func (at *containerAppTarget) Deploy(
 ) *async.TaskWithProgress[*ServiceDeployResult, ServiceProgress] {
 	return async.RunTaskWithProgress(
 		func(task *async.TaskContextWithProgress[*ServiceDeployResult, ServiceProgress]) {
+			manifestRoot := filepath.Join(serviceConfig.Path(), "manifest")
+			manifestDeployment := false
+			if targetResource.ResourceName() == "" {
+				manifestDeployment, err := manifestExists(manifestRoot)
+				if err != nil {
+					task.SetError(err)
+					return
+				}
+
+				if !manifestDeployment {
+					// manifest doesn't exist. The resource should have been provisioned
+					// Try refetching the resource, and if not, provide the error.
+					res, err := at.resourceManager.GetServiceResource(
+						ctx,
+						targetResource.SubscriptionId(),
+						targetResource.ResourceGroupName(),
+						serviceConfig,
+						"provision")
+					if err != nil {
+						task.SetError(err)
+						return
+					}
+
+					targetResource = environment.NewTargetResource(
+						targetResource.SubscriptionId(),
+						targetResource.ResourceGroupName(),
+						res.Name,
+						res.Type,
+					)
+				} else {
+					containerEnvName, err := getContainerAppEnvName(at.env, serviceConfig)
+					if err != nil {
+						task.SetError(err)
+						return
+					}
+				}
+			}
+
 			if err := at.validateTargetResource(ctx, serviceConfig, targetResource); err != nil {
 				task.SetError(fmt.Errorf("validating target resource: %w", err))
 				return
 			}
 
 			// Login, tag & push container image to ACR
-			containerDeployTask := at.containerHelper.Deploy(ctx, serviceConfig, packageOutput, targetResource)
+			containerDeployTask := at.containerHelper.Deploy(
+				ctx, serviceConfig, packageOutput, targetResource.SubscriptionId())
 			syncProgress(task, containerDeployTask.Progress())
 
 			_, err := containerDeployTask.Await()
@@ -97,6 +145,7 @@ func (at *containerAppTarget) Deploy(
 
 			imageName := at.env.GetServiceProperty(serviceConfig.Name, "IMAGE_NAME")
 			task.SetProgress(NewServiceProgress("Updating container app revision"))
+
 			err = at.containerAppService.AddRevision(
 				ctx,
 				targetResource.SubscriptionId(),
@@ -187,4 +236,43 @@ func (at *containerAppTarget) addPreProvisionChecks(ctx context.Context, service
 		at.env.SetServiceProperty(serviceConfig.Name, "RESOURCE_EXISTS", strconv.FormatBool(exists))
 		return at.envManager.Save(ctx, at.env)
 	})
+}
+
+func getContainerAppEnvName(env *environment.Environment, serviceConfig *ServiceConfig) (string, error) {
+	containerEnvName := env.GetServiceProperty(serviceConfig.Name, "CONTAINER_ENVIRONMENT_NAME")
+	if containerEnvName == "" {
+		containerEnvName = env.Getenv("AZURE_CONTAINER_APPS_ENVIRONMENT_ID")
+		if containerEnvName == "" {
+			return "", fmt.Errorf(
+				"could not determine container app environment for service %s, "+
+					"have you set AZURE_CONTAINER_ENVIRONMENT_NAME or "+
+					"SERVICE_%s_CONTAINER_ENVIRONMENT_NAME as an output of your "+
+					"infrastructure?", serviceConfig.Name, strings.ToUpper(serviceConfig.Name))
+		}
+
+		parts := strings.Split(containerEnvName, "/")
+		containerEnvName = parts[len(parts)-1]
+	}
+
+	return containerEnvName, nil
+}
+
+func manifestExists(root string) (bool, error) {
+	stat, err := os.Stat(filepath.Join(root, cManifestTemplateFile))
+	if !errors.Is(err, os.ErrNotExist) {
+		return false, err
+	}
+	if err == nil && !stat.IsDir() {
+		return true, nil
+	}
+
+	stat, err = os.Stat(filepath.Join(root, cManifestFile))
+	if !errors.Is(err, os.ErrNotExist) {
+		return false, err
+	}
+	if err == nil && !stat.IsDir() {
+		return true, nil
+	}
+
+	return false, nil
 }
