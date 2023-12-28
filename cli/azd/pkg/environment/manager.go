@@ -135,6 +135,30 @@ func (m *manager) Create(ctx context.Context, spec Spec) (*Environment, error) {
 		env.SetLocation(spec.Location)
 	}
 
+	idx, err := m.console.Select(ctx, input.ConsoleOptions{
+		// Alternatively: Will this environment be used in development or production scenarios?
+		Message: "Will this environment be deployed by other machines?",
+		Options: []string{
+			"Only on this machine",
+			"This and other machines",
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if idx == 1 {
+		err = env.Config.Set("values.storage", "azure.appconfiguration")
+		if err != nil {
+			return nil, err
+		}
+
+		err = env.Config.Set("keys.storage", "azure.keyvault")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err := m.Save(ctx, env); err != nil {
 		return nil, err
 	}

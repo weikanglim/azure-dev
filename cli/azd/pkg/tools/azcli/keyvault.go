@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/appconfiguration/armappconfiguration"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/keyvault/armkeyvault"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
 	"github.com/azure/azure-dev/cli/azd/pkg/convert"
@@ -116,6 +117,8 @@ func (cli *azCli) createKeyVaultClient(ctx context.Context, subscriptionId strin
 	if err != nil {
 		return nil, err
 	}
+
+	_, _ = armappconfiguration.NewConfigurationStoresClient("", credential, nil)
 
 	options := cli.clientOptionsBuilder(ctx).BuildArmClientOptions()
 	client, err := armkeyvault.NewVaultsClient(subscriptionId, credential, options)
