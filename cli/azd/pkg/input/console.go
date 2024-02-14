@@ -148,6 +148,8 @@ type ConsoleHandles struct {
 	Stdin  io.Reader
 	Stdout io.Writer
 	Stderr io.Writer
+	// Sneak this here for now to avoid code diffs
+	Machine bool
 }
 
 // Sets the underlying writer for output the console or
@@ -664,7 +666,7 @@ func watchTerminalInterrupt(c *AskerConsole) {
 
 // Creates a new console with the specified writer, handles and formatter.
 func NewConsole(noPrompt bool, isTerminal bool, w io.Writer, handles ConsoleHandles, formatter output.Formatter) Console {
-	asker := NewAsker(noPrompt, isTerminal, handles.Stdout, handles.Stdin)
+	asker := NewAsker(noPrompt, isTerminal, handles.Machine, handles.Stdout, handles.Stdin)
 
 	c := &AskerConsole{
 		asker:         asker,

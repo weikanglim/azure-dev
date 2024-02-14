@@ -113,13 +113,19 @@ func registerCommonDependencies(container *ioc.NestedContainer) {
 			writer = colorable.NewNonColorable(writer)
 		}
 
+		if rootOptions.Machine {
+			formatter = &output.JsonFormatter{}
+			writer = colorable.NewNonColorable(cmd.OutOrStdout())
+		}
+
 		isTerminal := cmd.OutOrStdout() == os.Stdout &&
 			cmd.InOrStdin() == os.Stdin && input.IsTerminal(os.Stdout.Fd(), os.Stdin.Fd())
 
 		return input.NewConsole(rootOptions.NoPrompt, isTerminal, writer, input.ConsoleHandles{
-			Stdin:  cmd.InOrStdin(),
-			Stdout: cmd.OutOrStdout(),
-			Stderr: cmd.ErrOrStderr(),
+			Stdin:   cmd.InOrStdin(),
+			Stdout:  cmd.OutOrStdout(),
+			Stderr:  cmd.ErrOrStderr(),
+			Machine: rootOptions.Machine,
 		}, formatter)
 	})
 

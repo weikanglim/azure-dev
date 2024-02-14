@@ -5,18 +5,28 @@ package input
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/azure/azure-dev/cli/azd/pkg/contracts"
 )
 
 type Asker func(p survey.Prompt, response interface{}) error
 
-func NewAsker(noPrompt bool, isTerminal bool, w io.Writer, r io.Reader) Asker {
+func NewAsker(noPrompt bool, isTerminal bool, isMachine bool, w io.Writer, r io.Reader) Asker {
+	if isMachine {
+		return func(p survey.Prompt, response interface{}) error {
+			return askOneMachine(p, response, w, r)
+		}
+	}
+
 	if noPrompt {
 		return askOneNoPrompt
 	}
@@ -24,6 +34,177 @@ func NewAsker(noPrompt bool, isTerminal bool, w io.Writer, r io.Reader) Asker {
 	return func(p survey.Prompt, response interface{}) error {
 		return askOnePrompt(p, response, isTerminal, w, r)
 	}
+}
+
+func askOneMachine(p survey.Prompt, response interface{}, w io.Writer, r io.Reader) error {
+	// Like (*bufio.Reader).ReadString(byte) except that it does not buffer input from the input stream.
+	// Instead, it reads a byte at a time until a delimiter is found or EOF is encountered,
+	// returning bytes read with no extra characters consumed.
+	readStringNoBuffer := func(r io.Reader, delim byte) (string, error) {
+		strBuf := bytes.Buffer{}
+		readBuf := make([]byte, 1)
+		for {
+			bytesRead, err := r.Read(readBuf)
+			if bytesRead > 0 && readBuf[0] != delim {
+				// discard err, per documentation, WriteByte always succeeds.
+				_ = strBuf.WriteByte(readBuf[0])
+			}
+
+			if err != nil {
+				return strBuf.String(), err
+			}
+
+			if readBuf[0] == delim {
+				return strBuf.String(), nil
+			}
+		}
+	}
+
+	readPrompt := func(e contracts.EventEnvelope, p contracts.Prompt) (string, error) {
+		e.Data = p
+		bytes, err := json.Marshal(e)
+		if err != nil {
+			return "", err
+		}
+		fmt.Fprintf(w, "%s\n", string(bytes))
+		result, err := readStringNoBuffer(r, '\n')
+		if err != nil {
+			return "", err
+		}
+
+		return result, nil
+	}
+
+	env := contracts.EventEnvelope{
+		Type:      contracts.PromptEventDataType,
+		Timestamp: time.Now(),
+	}
+
+	switch v := p.(type) {
+	case *survey.Input:
+		prompt := contracts.Prompt{
+			Message: v.Message,
+			Kind:    contracts.PromptKindText,
+			Default: v.Default,
+		}
+		result, err := readPrompt(env, prompt)
+		if err != nil {
+			return err
+		}
+
+		*(response.(*string)) = result
+	case *survey.Select:
+		prompt := contracts.Prompt{
+			Message: v.Message,
+			Kind:    contracts.PromptKindSingle,
+			Options: v.Options,
+		}
+
+		// Set Default as string
+		// switch response.(type) {
+		// case *int:
+		// 	for _, item := range v.Options {
+		// 		if v.Default.(string) == item {
+		// 			prompt.Default = item
+		// 			break
+		// 		}
+		// 	}
+
+		// 	if len(prompt.Default) == 0 {
+		// 		return fmt.Errorf("default response not in list of options for prompt '%s'", v.Message)
+		// 	}
+		// case *string:
+		// 	prompt.Default = v.Default.(string)
+		// default:
+		// 	return fmt.Errorf("bad type %T for result, should be (*int or *string)", response)
+		// }
+
+		result, err := readPrompt(env, prompt)
+		if err != nil {
+			return err
+		}
+
+		// validate result
+		for idx, val := range v.Options {
+			if val == result {
+				switch ptr := response.(type) {
+				case *string:
+					*ptr = val
+				case *int:
+					*ptr = idx
+				default:
+					return fmt.Errorf("bad type %T for result, should be (*int or *string)", response)
+				}
+
+				return nil
+			}
+		}
+		return fmt.Errorf(
+			"'%s' is not an allowed choice. allowed choices: %v",
+			result,
+			strings.Join(v.Options, ","))
+	case *survey.Confirm:
+		prompt := contracts.Prompt{
+			Message: v.Message,
+			Kind:    contracts.PromptKindConfirm,
+			Default: strconv.FormatBool(v.Default),
+		}
+
+		result, err := readPrompt(env, prompt)
+		if err != nil {
+			return err
+		}
+
+		resp, err := strconv.ParseBool(result)
+		if err != nil {
+			return err
+		}
+
+		*(response.(*bool)) = resp
+	case *survey.MultiSelect:
+		prompt := contracts.Prompt{
+			Message: v.Message,
+			Kind:    contracts.PromptKindMulti,
+			Options: v.Options,
+		}
+
+		defValue, ok := v.Default.([]string)
+		if !ok {
+			return fmt.Errorf("default response type is not a string list '%s'", v.Message)
+		}
+
+		prompt.Default = strings.Join(defValue, "\n")
+		resultStr, err := readPrompt(env, prompt)
+		if err != nil {
+			return err
+		}
+
+		result := strings.Split(resultStr, "\n")
+
+		// validate result
+		for _, res := range result {
+			hasFound := false
+			for _, item := range v.Options {
+				if res == item {
+					hasFound = true
+				}
+			}
+
+			if !hasFound {
+				return fmt.Errorf(
+					"'%s' is not an allowed choice. allowed choices: %v",
+					res,
+					strings.Join(v.Options, ","))
+			}
+		}
+
+		*(response.(*[]string)) = result
+		return nil
+	default:
+		panic(fmt.Sprintf("don't know how to prompt for type %T", p))
+	}
+
+	return nil
 }
 
 func askOneNoPrompt(p survey.Prompt, response interface{}) error {

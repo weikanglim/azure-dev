@@ -1,17 +1,21 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
 	"github.com/azure/azure-dev/cli/azd/cmd/middleware"
+	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/azapi"
+	"github.com/azure/azure-dev/cli/azd/pkg/contracts"
 	"github.com/azure/azure-dev/cli/azd/pkg/exec"
 	"github.com/azure/azure-dev/cli/azd/pkg/input"
 	"github.com/azure/azure-dev/cli/azd/pkg/ioc"
@@ -155,7 +159,7 @@ func (cb *CobraBuilder) configureActionResolver(cmd *cobra.Command, descriptor *
 		cmd.SilenceErrors = true
 
 		// TODO: Consider refactoring to move the UX writing to a middleware
-		invokeErr := cmdContainer.Invoke(func(console input.Console) {
+		invokeErr := cmdContainer.Invoke(func(console input.Console, rootOptions *internal.GlobalCommandOptions) {
 			var displayResult *ux.ActionResult
 			if actionResult != nil && actionResult.Message != nil {
 				displayResult = &ux.ActionResult{
@@ -197,6 +201,20 @@ func (cb *CobraBuilder) configureActionResolver(cmd *cobra.Command, descriptor *
 						ctx,
 						suggestionErr.Suggestion)
 				}
+			}
+
+			if rootOptions.Machine {
+				env := contracts.EventEnvelope{
+					Timestamp: time.Now(),
+					Type:      contracts.EndMessageEventDataType,
+				}
+				bytes, err := json.Marshal(env)
+				if err != nil {
+					panic(err)
+				}
+
+				fmt.Println(string(bytes))
+				_, _ = fmt.Scanln()
 			}
 
 			// Stop the spinner always to un-hide cursor

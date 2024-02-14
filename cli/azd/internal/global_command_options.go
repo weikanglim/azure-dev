@@ -25,4 +25,9 @@ type GlobalCommandOptions struct {
 	// like learn.microsoft.com. This is set directly when calling NewRootCmd
 	// and not bound to any command flags.
 	GenerateStaticHelp bool
+
+	// When true, initiates the machine protocol for communication.
+	// Newline delimitated JSON messages are sent to Stdout.
+	// Newline delimitated JSON messages are read from Stdin.
+	Machine bool
 }
