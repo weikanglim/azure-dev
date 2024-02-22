@@ -74,7 +74,6 @@ func NewCLI(t *testing.T, opts ...Options) *CLI {
 		env := append(
 			environ(opt.Session),
 			"AZD_TEST_HTTPS_PROXY="+opt.Session.ProxyUrl,
-			"HTTPS_PROXY="+opt.Session.ProxyUrl,
 			"AZD_DEBUG_PROVISION_PROGRESS_DISABLE=true",
 			"PATH="+opt.Session.CmdProxyPath)
 		cli.Env = append(cli.Env, env...)
