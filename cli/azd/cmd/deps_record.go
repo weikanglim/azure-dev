@@ -8,6 +8,7 @@ package cmd
 import (
 	"crypto/tls"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -19,6 +20,14 @@ func createHttpClient() *http.Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	// Allow for self-signed certificates, which is what the recording proxy uses.
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	if val, ok := os.LookupEnv("AZD_TEST_HTTPS_PROXY"); ok {
+		proxyUrl, err := url.Parse(val)
+		if err != nil {
+			panic(err)
+		}
+		http.DefaultTransport.(*http.Transport).Proxy = http.ProxyURL(proxyUrl)
+	}
+
 	client := &http.Client{
 		Transport: transport,
 	}
