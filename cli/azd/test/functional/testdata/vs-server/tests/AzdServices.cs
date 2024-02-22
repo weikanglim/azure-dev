@@ -3,15 +3,18 @@
 
 public class EnvironmentInfo
 {
-    public EnvironmentInfo(string name, bool isCurrent = false)
+    public EnvironmentInfo(string name, string dotenvPath, bool isCurrent = false)
     {
         Name = name;
         IsCurrent = isCurrent;
+        DotEnvPath = dotenvPath;
     }
 
     public string Name { get; }
 
     public bool IsCurrent { get; }
+
+    public string DotEnvPath { get; }
 }
 
 public class Environment {
@@ -21,6 +24,8 @@ public class Environment {
     public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 
     public Service[] Services { get; set; } = [];
+
+    public Dictionary<string, string> Values { get; set; } = new Dictionary<string, string>();
 
     public Environment(string name) {
         Name = name;
@@ -32,17 +37,13 @@ public class AspireHost {
     public string Path { get; set; } = "";
 
     public Service[] Services { get; set; } = [];
-
-    public string? Kind { get; set; }
-    public string? Endpoint { get; set; }
-    public string? ResourceId { get; set; }
 }
 
 public class Service {
     public string Name { get; set; }  = "";
 	public bool IsExternal { get; set; }
 
-    public string? Kind { get; set;}
+    public string Path { get; set;}
     public string? Endpoint { get; set;}
     public string? ResourceId { get; set;}
 }
