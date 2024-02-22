@@ -116,6 +116,41 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
+func Test_CLI_DevCenter_Init(t *testing.T) {
+	// running this test in parallel is ok as it uses a t.TempDir()
+	t.Parallel()
+	ctx, cancel := newTestContext(t)
+	defer cancel()
+
+	dir := tempDirWithDiagnostics(t)
+	t.Logf("DIR: %s", dir)
+
+	session := recording.Start(t)
+
+	envName := randomOrStoredEnvName(session)
+	t.Logf("AZURE_ENV_NAME: %s", envName)
+
+	cli := azdcli.NewCLI(t, azdcli.WithSession(session))
+	cli.WorkingDirectory = dir
+	cli.Env = append(cli.Env, os.Environ()...)
+	cli.Env = append(cli.Env, "AZURE_LOCATION=eastus2")
+	cli.Env = append(cli.Env, "GIT_SSL_NO_VERIFY=true")
+
+	_, err := cli.RunCommand(ctx, "config", "set", "platform.type", "devcenter")
+	require.NoError(t, err)
+
+	stdIn := stdInForDevCenterInit(envName, "Container-App-with-Cosmos_AZD-template (dc-wabrez-od3kzvk4mwe72/wabrez)")
+	_, err = cli.RunCommandWithStdIn(ctx, stdIn, "init")
+	require.NoError(t, err)
+
+	env, err := envFromAzdRoot(ctx, dir, envName)
+	require.NoError(t, err)
+
+	if session != nil {
+		session.Variables[recording.SubscriptionIdKey] = env.GetSubscriptionId()
+	}
+}
+
 func Test_CLI_InfraCreateAndDelete(t *testing.T) {
 	// running this test in parallel is ok as it uses a t.TempDir()
 	t.Parallel()
@@ -644,6 +679,16 @@ func randomEnvName() string {
 // when `init` is run
 func stdinForInit(envName string) string {
 	return fmt.Sprintf("%s\n", envName)
+}
+
+func stdInForDevCenterInit(envName string, template string) string {
+	inputs := []string{
+		"Select a template",
+		template,
+		envName,
+	}
+
+	return strings.Join(inputs, "\n")
 }
 
 // stdinForProvision is just enough stdin to accept the defaults for the two prompts

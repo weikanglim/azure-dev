@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"runtime"
 	"strings"
@@ -99,7 +100,8 @@ func (cli *gitCli) ShallowClone(ctx context.Context, repositoryPath string, bran
 	// Do not call `newRunArgs()` here because we don't want to apply the codespaces special patch that removes
 	// default authentication. `git clone` should work for private repos within a codespace with default auth.
 	// See: https://github.com/Azure/azure-dev/issues/2582
-	runArgs := exec.NewRunArgs("git", args...)
+
+	runArgs := exec.NewRunArgs("git", args...).WithEnv(os.Environ())
 	_, err := cli.commandRunner.Run(ctx, runArgs)
 	if err != nil {
 		return fmt.Errorf("failed to clone repository %s: %w", repositoryPath, err)
