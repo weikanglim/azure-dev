@@ -65,6 +65,26 @@ func TestPasswordShuffled(t *testing.T) {
 	require.Less(t, countCharsFrom(string(pwd[0:10]), LowercaseLetters), 10)
 }
 
+func TestRandomString(t *testing.T) {
+	str, err := RandomString(RandomStringComposition{
+		Length:     20,
+		Upper:      true,
+		MinUpper:   3,
+		Lower:      true,
+		MinLower:   4,
+		Numeric:    true,
+		MinNumeric: 5,
+		Special:    false,
+	})
+	require.NoError(t, err)
+
+	require.Len(t, str, 20)
+	require.GreaterOrEqual(t, countCharsFrom(str, LowercaseLetters), 3)
+	require.GreaterOrEqual(t, countCharsFrom(str, UppercaseLetters), 4)
+	require.GreaterOrEqual(t, countCharsFrom(str, Digits), 5)
+	require.Equal(t, 0, countCharsFrom(str, Symbols))
+}
+
 func countCharsFrom(s, choices string) int {
 	count := 0
 	for i := 0; i < len(choices); i++ {

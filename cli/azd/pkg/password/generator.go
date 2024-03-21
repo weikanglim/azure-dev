@@ -5,6 +5,7 @@ package password
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 )
@@ -66,6 +67,84 @@ func Generate(cmp PasswordComposition) (string, error) {
 	}
 
 	err = Shuffle(chars)
+	if err != nil {
+		return "", err
+	}
+	return string(chars), nil
+}
+
+type RandomStringComposition struct {
+	// The desired length of the generated string.
+	// When unset, the length of the generated string is MinLower + MinUpper + MinNumeric + MinSpecial.
+	Length uint
+
+	// If true, lowercase characters are allowed
+	Lower    bool
+	MinLower uint
+
+	// If true, uppercase characters are allowed
+	Upper    bool
+	MinUpper uint
+
+	// If true, numeric characters are allowed
+	Numeric    bool
+	MinNumeric uint
+
+	// If true, special characters are allowed
+	Special    bool
+	MinSpecial uint
+}
+
+func RandomString(input RandomStringComposition) (string, error) {
+	var length uint
+	if input.Length > 0 {
+		length = input.Length
+	} else {
+		length = input.MinLower + input.MinUpper + input.MinNumeric + input.MinSpecial
+		if length < 1 {
+			return "", errors.New("a fixed length or minimum lengths must be specified")
+		}
+	}
+
+	requirements := []struct {
+		allowed bool
+		min     uint
+		charSet string
+	}{
+		{input.Lower, input.MinLower, LowercaseLetters},
+		{input.Upper, input.MinUpper, UppercaseLetters},
+		{input.Numeric, input.MinNumeric, Digits},
+		{input.Special, input.MinSpecial, Symbols},
+	}
+
+	chars := make([]byte, length)
+	allowedCharSet := ""
+	var pos uint = 0
+	// Fill based on charset length requirements
+	for _, r := range requirements {
+		if r.min > 0 {
+			if err := addRandomChars(chars, &pos, r.min, r.charSet); err != nil {
+				return "", err
+			}
+		}
+
+		if r.allowed {
+			allowedCharSet += r.charSet
+		}
+	}
+
+	if len(allowedCharSet) == 0 {
+		return "", errors.New("some characters must be allowed")
+	}
+
+	// Fill remaining
+	if pos < length-1 {
+		if err := addRandomChars(chars, &pos, length-pos, allowedCharSet); err != nil {
+			return "", err
+		}
+	}
+
+	err := Shuffle(chars)
 	if err != nil {
 		return "", err
 	}
