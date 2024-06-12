@@ -179,7 +179,7 @@ func (p *ProvisionAction) Run(ctx context.Context) (*actions.ActionResult, error
 		return nil, err
 	}
 
-	infra, err := p.importManager.ProjectInfrastructure(ctx, p.projectConfig)
+	infra, err := p.importManager.ProjectInfrastructure(ctx, p.projectConfig, p.env)
 	if err != nil {
 		return nil, err
 	}

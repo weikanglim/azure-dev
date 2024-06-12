@@ -89,7 +89,7 @@ func (a *downAction) Run(ctx context.Context) (*actions.ActionResult, error) {
 
 	startTime := time.Now()
 
-	infra, err := a.importManager.ProjectInfrastructure(ctx, a.projectConfig)
+	infra, err := a.importManager.ProjectInfrastructure(ctx, a.projectConfig, a.env)
 	if err != nil {
 		return nil, err
 	}

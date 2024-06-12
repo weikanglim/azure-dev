@@ -445,7 +445,7 @@ func (ef *envRefreshAction) Run(ctx context.Context) (*actions.ActionResult, err
 		return nil, err
 	}
 
-	infra, err := ef.importManager.ProjectInfrastructure(ctx, ef.projectConfig)
+	infra, err := ef.importManager.ProjectInfrastructure(ctx, ef.projectConfig, ef.env)
 	if err != nil {
 		return nil, err
 	}

@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/infra/provisioning"
 )
 
@@ -50,7 +51,8 @@ var (
 )
 
 // Retrieves the list of services in the project, in a stable ordering that is deterministic.
-func (im *ImportManager) ServiceStable(ctx context.Context, projectConfig *ProjectConfig) ([]*ServiceConfig, error) {
+func (im *ImportManager) ServiceStable(
+	ctx context.Context, projectConfig *ProjectConfig, env *environment.Environment) ([]*ServiceConfig, error) {
 	allServices := make(map[string]*ServiceConfig)
 
 	for name, svcConfig := range projectConfig.Services {
@@ -64,7 +66,7 @@ func (im *ImportManager) ServiceStable(ctx context.Context, projectConfig *Proje
 					return nil, errAppHostMustTargetContainerApp
 				}
 
-				services, err := im.dotNetImporter.Services(ctx, projectConfig, svcConfig)
+				services, err := im.dotNetImporter.Services(ctx, projectConfig, svcConfig, env)
 				if err != nil {
 					return nil, fmt.Errorf("importing services: %w", err)
 				}
@@ -108,7 +110,8 @@ const (
 // ProjectInfrastructure parses the project configuration and returns the infrastructure configuration.
 // The configuration can be explicitly defined on azure.yaml using path and module, or in case these values
 // are not explicitly defined, the project importer uses default values to find the infrastructure.
-func (im *ImportManager) ProjectInfrastructure(ctx context.Context, projectConfig *ProjectConfig) (*Infra, error) {
+func (im *ImportManager) ProjectInfrastructure(
+	ctx context.Context, projectConfig *ProjectConfig, env *environment.Environment) (*Infra, error) {
 	// Use default project values for Infra when not specified in azure.yaml
 	if projectConfig.Infra.Module == "" {
 		projectConfig.Infra.Module = DefaultModule
@@ -141,7 +144,7 @@ func (im *ImportManager) ProjectInfrastructure(ctx context.Context, projectConfi
 					return nil, errAppHostMustTargetContainerApp
 				}
 
-				return im.dotNetImporter.ProjectInfrastructure(ctx, svcConfig)
+				return im.dotNetImporter.ProjectInfrastructure(ctx, svcConfig, env)
 			} else if err != nil {
 				log.Printf("error checking if %s is an app host project: %v", svcConfig.Path(), err)
 			}
@@ -166,14 +169,15 @@ func pathHasModule(path, module string) (bool, error) {
 
 }
 
-func (im *ImportManager) SynthAllInfrastructure(ctx context.Context, projectConfig *ProjectConfig) (fs.FS, error) {
+func (im *ImportManager) SynthAllInfrastructure(
+	ctx context.Context, projectConfig *ProjectConfig, env *environment.Environment) (fs.FS, error) {
 	for _, svcConfig := range projectConfig.Services {
 		if svcConfig.Language == ServiceLanguageDotNet {
 			if len(projectConfig.Services) != 1 {
 				return nil, errNoMultipleServicesWithAppHost
 			}
 
-			return im.dotNetImporter.SynthAllInfrastructure(ctx, projectConfig, svcConfig)
+			return im.dotNetImporter.SynthAllInfrastructure(ctx, projectConfig, svcConfig, env)
 		}
 	}
 

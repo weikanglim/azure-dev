@@ -11,6 +11,7 @@ import (
 	"github.com/azure/azure-dev/cli/azd/cmd/actions"
 	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/pkg/alpha"
+	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment/azdcontext"
 	"github.com/azure/azure-dev/cli/azd/pkg/input"
 	"github.com/azure/azure-dev/cli/azd/pkg/osutil"
@@ -58,6 +59,7 @@ type infraSynthAction struct {
 	azdCtx        *azdcontext.AzdContext
 	flags         *infraSynthFlags
 	alphaManager  *alpha.FeatureManager
+	env           *environment.Environment
 }
 
 func newInfraSynthAction(
@@ -67,6 +69,7 @@ func newInfraSynthAction(
 	console input.Console,
 	azdCtx *azdcontext.AzdContext,
 	alphaManager *alpha.FeatureManager,
+	env *environment.Environment,
 ) actions.Action {
 	return &infraSynthAction{
 		projectConfig: projectConfig,
@@ -75,6 +78,7 @@ func newInfraSynthAction(
 		console:       console,
 		azdCtx:        azdCtx,
 		alphaManager:  alphaManager,
+		env:           env,
 	}
 }
 
@@ -93,7 +97,7 @@ func (a *infraSynthAction) Run(ctx context.Context) (*actions.ActionResult, erro
 	spinnerMessage := "Synthesizing infrastructure"
 
 	a.console.ShowSpinner(ctx, spinnerMessage, input.Step)
-	synthFS, err := a.importManager.SynthAllInfrastructure(ctx, a.projectConfig)
+	synthFS, err := a.importManager.SynthAllInfrastructure(ctx, a.projectConfig, a.env)
 	if err != nil {
 		a.console.StopSpinner(ctx, spinnerMessage, input.StepFailed)
 		return nil, err

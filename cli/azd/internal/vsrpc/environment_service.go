@@ -143,10 +143,11 @@ func (s *environmentService) DeleteEnvironmentAsync(
 	container.spinnerWriter.AddWriter(spinnerWriter)
 
 	var c struct {
-		provisionManager *provisioning.Manager  `container:"type"`
-		envManager       environment.Manager    `container:"type"`
-		importManager    *project.ImportManager `container:"type"`
-		projectConfig    *project.ProjectConfig `container:"type"`
+		provisionManager *provisioning.Manager    `container:"type"`
+		envManager       environment.Manager      `container:"type"`
+		env              *environment.Environment `container:"type"`
+		importManager    *project.ImportManager   `container:"type"`
+		projectConfig    *project.ProjectConfig   `container:"type"`
 	}
 	container.MustRegisterScoped(func() internal.EnvFlag {
 		return internal.EnvFlag{
@@ -161,7 +162,7 @@ func (s *environmentService) DeleteEnvironmentAsync(
 	if mode&DeleteModeAzureResources > 0 {
 		_ = observer.OnNext(ctx, newImportantProgressMessage("Removing Azure resources"))
 
-		infra, err := c.importManager.ProjectInfrastructure(ctx, c.projectConfig)
+		infra, err := c.importManager.ProjectInfrastructure(ctx, c.projectConfig, c.env)
 		if err != nil {
 			return false, err
 		}

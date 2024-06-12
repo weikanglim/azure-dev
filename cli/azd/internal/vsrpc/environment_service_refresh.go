@@ -59,6 +59,7 @@ func (s *environmentService) refreshEnvironmentAsync(
 		resourceManager      project.ResourceManager     `container:"type"`
 		serviceManager       project.ServiceManager      `container:"type"`
 		envManager           environment.Manager         `container:"type"`
+		env                  *environment.Environment    `container:"type"`
 	}
 
 	container.MustRegisterScoped(func() internal.EnvFlag {
@@ -77,7 +78,7 @@ func (s *environmentService) refreshEnvironmentAsync(
 		return nil, err
 	}
 
-	infra, err := c.importManager.ProjectInfrastructure(ctx, c.projectConfig)
+	infra, err := c.importManager.ProjectInfrastructure(ctx, c.projectConfig, c.env)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,7 @@ func (s *environmentService) refreshEnvironmentAsync(
 		}
 	}
 
-	stableServices, err := c.importManager.ServiceStable(ctx, c.projectConfig)
+	stableServices, err := c.importManager.ServiceStable(ctx, c.projectConfig, c.env)
 	if err != nil {
 		return nil, err
 	}

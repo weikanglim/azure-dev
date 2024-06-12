@@ -98,8 +98,11 @@ func (ai *DotNetImporter) CanImport(ctx context.Context, projectPath string) (bo
 	return strings.TrimSpace(value) == "true", nil
 }
 
-func (ai *DotNetImporter) ProjectInfrastructure(ctx context.Context, svcConfig *ServiceConfig) (*Infra, error) {
-	manifest, err := ai.ReadManifest(ctx, svcConfig)
+func (ai *DotNetImporter) ProjectInfrastructure(
+	ctx context.Context,
+	svcConfig *ServiceConfig,
+	env *environment.Environment) (*Infra, error) {
+	manifest, err := ai.ReadManifest(ctx, svcConfig, env)
 	if err != nil {
 		return nil, fmt.Errorf("generating app host manifest: %w", err)
 	}
@@ -167,11 +170,11 @@ func mapToStringSlice(m map[string]string, separator string) []string {
 }
 
 func (ai *DotNetImporter) Services(
-	ctx context.Context, p *ProjectConfig, svcConfig *ServiceConfig,
+	ctx context.Context, p *ProjectConfig, svcConfig *ServiceConfig, env *environment.Environment,
 ) (map[string]*ServiceConfig, error) {
 	services := make(map[string]*ServiceConfig)
 
-	manifest, err := ai.ReadManifest(ctx, svcConfig)
+	manifest, err := ai.ReadManifest(ctx, svcConfig, env)
 	if err != nil {
 		return nil, fmt.Errorf("generating app host manifest: %w", err)
 	}
@@ -276,9 +279,9 @@ func (ai *DotNetImporter) Services(
 }
 
 func (ai *DotNetImporter) SynthAllInfrastructure(
-	ctx context.Context, p *ProjectConfig, svcConfig *ServiceConfig,
+	ctx context.Context, p *ProjectConfig, svcConfig *ServiceConfig, env *environment.Environment,
 ) (fs.FS, error) {
-	manifest, err := ai.ReadManifest(ctx, svcConfig)
+	manifest, err := ai.ReadManifest(ctx, svcConfig, env)
 	if err != nil {
 		return nil, fmt.Errorf("generating apphost manifest: %w", err)
 	}
@@ -383,19 +386,16 @@ func (ai *DotNetImporter) SynthAllInfrastructure(
 }
 
 // ReadManifest reads the manifest for the given app host service, and caches the result.
-func (ai *DotNetImporter) ReadManifest(ctx context.Context, svcConfig *ServiceConfig) (*apphost.Manifest, error) {
+func (ai *DotNetImporter) ReadManifest(
+	ctx context.Context,
+	svcConfig *ServiceConfig,
+	env *environment.Environment) (*apphost.Manifest, error) {
 	ai.cacheMu.Lock()
 	defer ai.cacheMu.Unlock()
 
-	var dotnetEnv string
-
-	if env, err := ai.lazyEnv.GetValue(); err == nil {
-		dotnetEnv = env.Getenv("DOTNET_ENVIRONMENT")
-	}
-
 	cacheKey := manifestCacheKey{
 		projectPath:       svcConfig.Path(),
-		dotnetEnvironment: dotnetEnv,
+		dotnetEnvironment: env.Getenv("DOTNET_ENVIRONMENT"),
 	}
 
 	if cached, has := ai.cache[cacheKey]; has {

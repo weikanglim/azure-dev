@@ -753,7 +753,7 @@ func (pm *PipelineManager) initialize(ctx context.Context, override string) erro
 	pm.scmProvider = scmProvider
 	pm.ciProvider = ciProvider
 
-	infra, err := pm.importManager.ProjectInfrastructure(ctx, prjConfig)
+	infra, err := pm.importManager.ProjectInfrastructure(ctx, prjConfig, pm.env)
 	if err != nil {
 		return err
 	}

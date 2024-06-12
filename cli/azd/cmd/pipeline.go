@@ -153,7 +153,7 @@ func newPipelineConfigAction(
 
 // Run implements action interface
 func (p *pipelineConfigAction) Run(ctx context.Context) (*actions.ActionResult, error) {
-	infra, err := p.importManager.ProjectInfrastructure(ctx, p.projectConfig)
+	infra, err := p.importManager.ProjectInfrastructure(ctx, p.projectConfig, p.env)
 	if err != nil {
 		return nil, err
 	}

@@ -102,7 +102,7 @@ func newUpAction(
 }
 
 func (u *upAction) Run(ctx context.Context) (*actions.ActionResult, error) {
-	infra, err := u.importManager.ProjectInfrastructure(ctx, u.projectConfig)
+	infra, err := u.importManager.ProjectInfrastructure(ctx, u.projectConfig, u.env)
 	if err != nil {
 		return nil, err
 	}

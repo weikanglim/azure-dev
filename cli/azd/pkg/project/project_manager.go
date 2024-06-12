@@ -11,6 +11,7 @@ import (
 
 	"github.com/azure/azure-dev/cli/azd/internal/tracing"
 	"github.com/azure/azure-dev/cli/azd/internal/tracing/fields"
+	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment/azdcontext"
 	"github.com/azure/azure-dev/cli/azd/pkg/ext"
 	"github.com/azure/azure-dev/cli/azd/pkg/tools"
@@ -39,7 +40,7 @@ type ProjectManager interface {
 	// handlers to participate in the lifecycle of an azd project
 	//
 	// The initialization process will also ensure that all required tools are installed
-	Initialize(ctx context.Context, projectConfig *ProjectConfig) error
+	Initialize(ctx context.Context, projectConfig *ProjectConfig, env *environment.Environment) error
 
 	// Returns the default service name to target based on the current working directory.
 	//
@@ -83,10 +84,11 @@ func NewProjectManager(
 }
 
 // Initializes the project and all child services defined within the project configuration
-func (pm *projectManager) Initialize(ctx context.Context, projectConfig *ProjectConfig) error {
+func (pm *projectManager) Initialize(
+	ctx context.Context, projectConfig *ProjectConfig, env *environment.Environment) error {
 	var projectTools []tools.ExternalTool
 
-	servicesStable, err := pm.importManager.ServiceStable(ctx, projectConfig)
+	servicesStable, err := pm.importManager.ServiceStable(ctx, projectConfig, env)
 	if err != nil {
 		return err
 	}
