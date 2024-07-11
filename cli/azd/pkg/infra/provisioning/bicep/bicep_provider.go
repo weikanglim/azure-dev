@@ -78,9 +78,7 @@ type BicepProvider struct {
 	ignoreDeploymentState bool
 	// compileBicepResult is cached to avoid recompiling the same bicep file multiple times in the same azd run.
 	compileBicepMemoryCache *compileBicepResult
-	// prevent resolving parameters multiple times in the same azd run.
-	ensureParamsInMemoryCache azure.ArmParameters
-	keyvaultService           keyvault.KeyVaultService
+	keyvaultService         keyvault.KeyVaultService
 
 	portalUrlBase string
 }
@@ -1944,10 +1942,6 @@ func (p *BicepProvider) ensureParameters(
 	ctx context.Context,
 	template azure.ArmTemplate,
 ) (azure.ArmParameters, error) {
-	if p.ensureParamsInMemoryCache != nil {
-		return maps.Clone(p.ensureParamsInMemoryCache), nil
-	}
-
 	parameters, err := p.loadParameters(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("resolving bicep parameters file: %w", err)
@@ -2034,7 +2028,6 @@ func (p *BicepProvider) ensureParameters(
 
 	if len(parameterPrompts) > 0 {
 		if p.console.SupportsPromptDialog() {
-
 			dialog := input.PromptDialog{
 				Title: "Configure required deployment parameters",
 				Description: "The following parameters are required for deployment. " +
@@ -2074,9 +2067,6 @@ func (p *BicepProvider) ensureParameters(
 				configuredParameters[key] = azure.ArmParameterValue{
 					Value: value,
 				}
-				configuredParameters[prompt.key] = azure.ArmParameterValue{
-					Value: value,
-				}
 			}
 		}
 	}
@@ -2086,7 +2076,7 @@ func (p *BicepProvider) ensureParameters(
 			p.console.Message(ctx, fmt.Sprintf("warning: failed to save configured values: %v", err))
 		}
 	}
-	p.ensureParamsInMemoryCache = maps.Clone(configuredParameters)
+
 	return configuredParameters, nil
 }
 
