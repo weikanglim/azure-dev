@@ -9,9 +9,9 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: 127.0.0.1:61535
-        remote_addr: 127.0.0.1:61536
-        request_uri: http://127.0.0.1:61535/test.txt
+        host: 127.0.0.1
+        remote_addr: 127.0.0.1
+        request_uri: http://127.0.0.1/test.txt
         body: ""
         form: {}
         headers:
@@ -20,10 +20,10 @@ interactions:
             Authorization:
                 - SANITIZED
             User-Agent:
-                - azsdk-go-azblob/v1.3.1 (go1.23.0; darwin)
+                - azsdk-go-azblob/v1.3.1 (go1.21.1; darwin)
             X-Ms-Version:
                 - "2023-11-03"
-        url: http://127.0.0.1:61535/test.txt
+        url: http://127.0.0.1/test.txt
         method: HEAD
       response:
         proto: HTTP/1.1
@@ -40,9 +40,9 @@ interactions:
             Content-Type:
                 - text/plain; charset=utf-8
             Date:
-                - Wed, 21 Aug 2024 01:32:41 GMT
+                - Fri, 23 Aug 2024 22:24:46 GMT
         status: 200 OK
         code: 200
-        duration: 218.542µs
+        duration: 316.666µs
 ---
-time: "1724203960"
+time: "1724451886"

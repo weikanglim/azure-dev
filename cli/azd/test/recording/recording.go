@@ -186,6 +186,14 @@ func Start(t *testing.T, opts ...Options) *Session {
 			return r.Method == i.Method && r.URL.String() == recorded.String()
 		}
 
+		// Ignore ports on localhost
+		if strings.HasPrefix(r.URL.Host, "127.0.0.1") {
+			if sep := strings.Index(r.URL.Host, ":"); sep > 0 {
+				r.URL.Host = r.URL.Host[:sep]
+			}
+			return r.Method == i.Method && r.URL.String() == i.URL
+		}
+
 		return cassette.DefaultMatcher(r, i)
 	})
 
@@ -233,6 +241,39 @@ func Start(t *testing.T, opts ...Options) *Session {
 		}
 
 		return nil
+	}, recorder.BeforeSaveHook)
+
+	// Ignore ports for localhost when writing to cassette
+	vcr.AddHook(func(i *cassette.Interaction) error {
+		if strings.HasPrefix(i.Request.Host, "127.0.0.1") {
+			if sep := strings.Index(i.Request.Host, ":"); sep > 0 {
+				i.Request.Host = i.Request.Host[:sep]
+			}
+
+			if sep := strings.Index(i.Request.RemoteAddr, ":"); sep > 0 {
+				i.Request.RemoteAddr = i.Request.RemoteAddr[:sep]
+			}
+
+			url, err := url.Parse(i.Request.URL)
+			if err != nil {
+				return err
+			}
+			if sep := strings.Index(url.Host, ":"); sep > 0 {
+				url.Host = url.Host[:sep]
+			}
+			i.Request.URL = url.String()
+
+			url, err = url.Parse(i.Request.RequestURI)
+			if err != nil {
+				return err
+			}
+			if sep := strings.Index(url.Host, ":"); sep > 0 {
+				url.Host = url.Host[:sep]
+			}
+			i.Request.RequestURI = url.String()
+		}
+
+		return TrimSubscriptionsDeployment(i, session.Variables)
 	}, recorder.BeforeSaveHook)
 
 	vcr.AddHook(func(i *cassette.Interaction) error {

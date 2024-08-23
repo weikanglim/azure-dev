@@ -14,7 +14,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
 
 // Test_gzip2HttpRoundTripper_ContentLength validates that a response served with gzip encoding is correctly expanded
@@ -67,7 +66,7 @@ func (f funcRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 func TestBlobClientGetProperties(t *testing.T) {
 	msg := "Hello, world."
 
-	session := Start(t, WithRecordMode(recorder.ModeRecordOnly))
+	session := Start(t)
 	proxyClient, err := proxyClient(session.ProxyUrl)
 	require.NoError(t, err)
 
