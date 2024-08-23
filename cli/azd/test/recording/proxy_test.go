@@ -8,13 +8,14 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blockblob"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
 
 // Test_gzip2HttpRoundTripper_ContentLength validates that a response served with gzip encoding is correctly expanded
@@ -67,30 +68,18 @@ func (f funcRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 func TestBlobClientGetProperties(t *testing.T) {
 	msg := "Hello, world."
 
-	session := Start(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(msg)))
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(msg))
+		require.NoError(t, err)
+	}))
+
+	session := Start(t, WithRecordMode(recorder.ModeReplayOnly), WithHostMapping(strings.TrimPrefix(server.URL, "http://"), "127.0.0.1:80"))
 	proxyClient, err := proxyClient(session.ProxyUrl)
 	require.NoError(t, err)
 
-	server := &http.Server{
-		Addr: "127.0.0.1:61535",
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Length", fmt.Sprintf("%d", len(msg)))
-			w.WriteHeader(http.StatusOK)
-			_, err := w.Write([]byte(msg))
-			require.NoError(t, err)
-		}),
-		ReadTimeout:       time.Second,
-		ReadHeaderTimeout: time.Second,
-	}
-
-	go func() {
-		err := server.ListenAndServe()
-		if err != http.ErrServerClosed {
-			require.NoError(t, err)
-		}
-	}()
-
-	blobClient, err := blockblob.NewClientWithNoCredential("http://127.0.0.1:61535/test.txt", &blockblob.ClientOptions{
+	blobClient, err := blockblob.NewClientWithNoCredential(server.URL+"/test.txt", &blockblob.ClientOptions{
 		ClientOptions: azcore.ClientOptions{
 			Transport: proxyClient,
 		},
@@ -102,6 +91,5 @@ func TestBlobClientGetProperties(t *testing.T) {
 	assert.NotNil(t, props.ContentLength)
 	assert.Equal(t, int64(len(msg)), *props.ContentLength)
 
-	err = server.Shutdown(context.Background())
-	require.NoError(t, err)
+	server.Close()
 }
