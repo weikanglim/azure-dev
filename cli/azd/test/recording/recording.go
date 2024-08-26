@@ -56,7 +56,7 @@ func (in modeOption) Apply(out recordOptions) recordOptions {
 // WithHostMapping allows mapping one host to another in a recording. This is useful in cases where you are using
 // [httptest.NewServer] in a recorded test, since the host for the server differs across runs due to the randomly assigned
 // port. In this case you can call WithHostMapping(strings.TrimPrefix(server.URL, "http://"), "127.0.0.1:80") to ensure
-// that in the recording the host is always
+// that in the recording the host is always set to the same value.
 func WithHostMapping(from, to string) Options {
 	return hostMappingOption{from: from, to: to}
 }
@@ -207,6 +207,12 @@ func Start(t *testing.T, opts ...Options) *Session {
 			r.URL.RawQuery = ""
 			log.Info("recorderProxy: ignoring query parameters in containerappOperationResults", "url", r.URL)
 			return r.Method == i.Method && r.URL.String() == recorded.String()
+		}
+
+		if opt.hostMapping != nil {
+			if to, has := opt.hostMapping[r.URL.Host]; has {
+				r.URL.Host = to
+			}
 		}
 
 		return cassette.DefaultMatcher(r, i)
