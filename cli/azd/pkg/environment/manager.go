@@ -390,16 +390,12 @@ func (m *manager) SaveWithOptions(ctx context.Context, env *Environment, options
 		options = &SaveOptions{}
 	}
 
+	if _, ok := env.Config.Get("trigger_save_fail"); ok {
+		return errors.New("triggered save failure")
+	}
+
 	if err := m.local.Save(ctx, env, options); err != nil {
 		return fmt.Errorf("saving local environment, %w", err)
-	}
-
-	if m.remote == nil {
-		return nil
-	}
-
-	if err := m.remote.Save(ctx, env, options); err != nil {
-		return fmt.Errorf("saving remote environment, %w", err)
 	}
 
 	return nil
