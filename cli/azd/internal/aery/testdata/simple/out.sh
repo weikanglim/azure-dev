@@ -1,0 +1,1 @@
+cue export ai.cue -l input: input.json -e 'yaml.MarshalStream(output)' --out text > out.yaml

@@ -1,0 +1,10 @@
+{
+    "name": "cog-weilimtest",
+    "location": "westus3",
+    "id": "",
+	"tags": {},
+	"model": {
+		"name": "gpt-4o",
+		"version": "2024-08-06"
+	}
+}
