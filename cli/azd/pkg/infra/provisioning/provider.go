@@ -15,6 +15,7 @@ const (
 	Arm          ProviderKind = "arm"
 	Terraform    ProviderKind = "terraform"
 	Pulumi       ProviderKind = "pulumi"
+	Aery         ProviderKind = "aery"
 	Test         ProviderKind = "test"
 )
 

@@ -9,8 +9,10 @@ import (
 	"github.com/azure/azure-dev/cli/azd/pkg/cosmosdb"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/infra/provisioning"
+	infraAery "github.com/azure/azure-dev/cli/azd/pkg/infra/provisioning/aery"
 	infraBicep "github.com/azure/azure-dev/cli/azd/pkg/infra/provisioning/bicep"
 	infraTerraform "github.com/azure/azure-dev/cli/azd/pkg/infra/provisioning/terraform"
+
 	"github.com/azure/azure-dev/cli/azd/pkg/ioc"
 	"github.com/azure/azure-dev/cli/azd/pkg/platform"
 	"github.com/azure/azure-dev/cli/azd/pkg/project"
@@ -52,6 +54,7 @@ func (p *DefaultPlatform) ConfigureContainer(container *ioc.NestedContainer) err
 	provisionProviderMap := map[provisioning.ProviderKind]any{
 		provisioning.Bicep:     infraBicep.NewBicepProvider,
 		provisioning.Terraform: infraTerraform.NewTerraformProvider,
+		provisioning.Aery:      infraAery.NewAeryProvider,
 	}
 
 	for provider, constructor := range provisionProviderMap {
