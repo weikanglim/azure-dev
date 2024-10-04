@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -12,10 +14,13 @@ import (
 	"github.com/azure/azure-dev/cli/azd/internal/aery"
 )
 
+// go run main.go -f "/Users/weilim/repos/ai-demo/infra/ai.yaml" -s "faa080af-c1d8-40ad-9cce-e1a450ca5b57" -g rg-weilim-ai-01
+
 var (
 	subscriptionId = flag.StringP("subscription-id", "s", "", "Azure subscription ID")
 	resourceGroup  = flag.StringP("resource-group", "g", "", "Group (Resource group)")
 	path           = flag.StringP("file", "f", "", "Path to the resource configuration file")
+	debug          = flag.Bool("debug", false, "Enable debug logging")
 )
 
 func run() error {
@@ -42,6 +47,12 @@ func run() error {
 
 func main() {
 	flag.Parse()
+	log.SetOutput(io.Discard)
+	if debug != nil && *debug {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+		log.SetOutput(os.Stderr)
+	}
+
 	err := run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

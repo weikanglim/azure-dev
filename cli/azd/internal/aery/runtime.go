@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	armruntime "github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/runtime"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	azruntime "github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/streaming"
 	"github.com/braydonk/yaml"
@@ -99,16 +99,22 @@ func Apply(
 	for i, resource := range resources {
 		// EXP: dynamic parent resolution. Evaluate if this is a good idea.
 		if isChildResource(resource.Kind) && resource.Parent == "" {
+			log.Println("dynamic-resolve: resolving parent for", resource.Name)
 			for j, parent := range resources {
 				if i == j {
 					continue
 				}
 
-				before, after, found := strings.Cut(parent.Kind, resource.Kind)
+				before, after, found := strings.Cut(resource.Kind, parent.Kind)
 				if found && before == "" && len(after) > 1 && after[0] == '/' && !strings.Contains(after[1:], "/") {
-					resource.Parent = parent.Kind + "/" + parent.Name
+					resources[i].Parent = parent.Kind + "/" + parent.Name
+					log.Printf("dynamic-resolve: found parent: %s", resource.Parent)
 					break
 				}
+			}
+
+			if resource.Parent == "" {
+				return fmt.Errorf("failed to resolve parent for %s", resource.Name)
 			}
 		}
 	}
@@ -116,7 +122,7 @@ func Apply(
 	// execute sequentially.
 	// TODO: implement parallel execution.
 	// TODO: implement dependency resolution.
-	pipeline, err := armruntime.NewPipeline("aery", "0.0.1", credentials, runtime.PipelineOptions{}, opt.ClientOptions)
+	pipeline, err := armruntime.NewPipeline("aery", "0.0.1", credentials, azruntime.PipelineOptions{}, opt.ClientOptions)
 	if err != nil {
 		return fmt.Errorf("failed creating HTTP pipeline: %w", err)
 	}
@@ -179,7 +185,11 @@ func Apply(
 		}
 
 		fmt.Printf("  applied %s in %s\n", resource.Name, time.Since(resStart).Round(100*time.Millisecond))
-		fmt.Println(string(body))
+		log.Println("--------------------------------------------------------------------------------")
+		log.Printf("Result of applying resource: %s", location)
+		log.Println("--------------------------------------------------------------------------------")
+		log.Println(string(body))
+		log.Println("--------------------------------------------------------------------------------")
 	}
 	fmt.Printf("applied all in %s\n", time.Since(execStart).Round(100*time.Millisecond))
 
