@@ -15,6 +15,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/azure/azure-dev/cli/azd/internal/aery"
 	"github.com/azure/azure-dev/cli/azd/internal/scaffold"
 	"github.com/azure/azure-dev/cli/azd/pkg/environment"
 	"github.com/azure/azure-dev/cli/azd/pkg/infra/provisioning"
@@ -177,6 +178,52 @@ func (im *ImportManager) ProjectInfrastructure(ctx context.Context, projectConfi
 		}
 	}
 
+	if projectConfig.Infra.Provider == provisioning.Aery {
+		tmpDir, err := os.MkdirTemp("", "azd-infra")
+		if err != nil {
+			return nil, fmt.Errorf("creating temporary directory: %w", err)
+		}
+
+		files, err := generateAery("", projectConfig, im.env)
+		if err != nil {
+			return nil, fmt.Errorf("generating infrastructure: %w", err)
+		}
+
+		err = fs.WalkDir(files, ".", func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if d.IsDir() {
+				return nil
+			}
+
+			target := filepath.Join(tmpDir, path)
+			if err := os.MkdirAll(filepath.Dir(target), osutil.PermissionDirectoryOwnerOnly); err != nil {
+				return err
+			}
+
+			contents, err := fs.ReadFile(files, path)
+			if err != nil {
+				return err
+			}
+
+			return os.WriteFile(target, contents, d.Type().Perm())
+		})
+		if err != nil {
+			return nil, fmt.Errorf("writing infrastructure: %w", err)
+		}
+
+		return &Infra{
+			Options: provisioning.Options{
+				Provider: provisioning.Aery,
+				Path:     tmpDir,
+				Module:   DefaultModule,
+			},
+			cleanupDir: tmpDir,
+		}, nil
+	}
+
 	infraSpec, err := infraSpec(projectConfig, im.env)
 	if err != nil {
 		return nil, fmt.Errorf("parsing infrastructure: %w", err)
@@ -230,6 +277,31 @@ func (im *ImportManager) ProjectInfrastructure(ctx context.Context, projectConfi
 		},
 		cleanupDir: tmpDir,
 	}, nil
+}
+
+func generateAery(root string, prj *ProjectConfig, env *environment.Environment) (*memfs.FS, error) {
+	memFs := memfs.New()
+	for _, res := range prj.Resources {
+		newRes := *res
+		name, err := aery.UniqueString(env.Name())
+		if err != nil {
+			return nil, fmt.Errorf("generating unique name: %w", err)
+		}
+		newRes.Tags = map[string]string{
+			"name": "cog-" + name,
+		}
+		newRes.Location = env.GetLocation()
+
+		if newRes.Type == ResourceTypeOpenAiModel {
+			//TODO: think about what root means for in-memory vs on-disk layout
+			err := GenerateResourceDefinitions(&newRes, "", GenerateOptions{Root: root, fs: memFs})
+			if err != nil {
+				return nil, fmt.Errorf("generating resource definitions: %w", err)
+			}
+		}
+	}
+
+	return memFs, nil
 }
 
 // pathHasModule returns true if there is a file named "<module>" or "<module.bicep>" in path.
@@ -469,6 +541,10 @@ func (im *ImportManager) SynthAllInfrastructure(ctx context.Context, projectConf
 
 			return im.dotNetImporter.SynthAllInfrastructure(ctx, projectConfig, svcConfig)
 		}
+	}
+
+	if projectConfig.Infra.Provider == provisioning.Aery {
+		return generateAery("infra", projectConfig, im.env)
 	}
 
 	infraSpec, err := infraSpec(projectConfig, im.env)

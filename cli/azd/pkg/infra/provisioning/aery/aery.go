@@ -76,7 +76,7 @@ func (a *aeryProvider) Deploy(ctx context.Context) (*provisioning.DeployResult, 
 		ctx,
 		filepath.Join(a.root, "ai.yaml"),
 		subscriptionId,
-		"rg-weilim-at-01",
+		"rg-weilim-ai-01",
 		cred,
 		aery.ApplyOptions{
 			ClientOptions: a.armClientOptions,

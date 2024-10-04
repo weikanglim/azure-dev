@@ -75,18 +75,21 @@ func AllCategories() map[ResourceKind][]ResourceType {
 
 type ResourceConfig struct {
 	// Reference to the parent project configuration
-	Project *ProjectConfig `yaml:"-"`
+	Project *ProjectConfig `yaml:"-" json:"-"`
 	// Type of service
 	Type ResourceType `yaml:"type"`
 	// The friendly name/key of the project from the azure.yaml file
-	Name string `yaml:"-"`
+	Name string `yaml:"-" json:"name"`
 	// The properties for the resource
-	RawProps map[string]yaml.Node `yaml:",inline"`
-	Props    interface{}          `yaml:"-"`
+	RawProps map[string]yaml.Node `yaml:",inline" json:"-"`
+	Props    interface{}          `yaml:"-" json:"props"`
 	// The optional bicep module override for the resource
 	Module string `yaml:"module,omitempty"`
 	// Relationships to other resources
 	Uses []string `yaml:"uses,omitempty"`
+
+	Location string            `yaml:"location,omitempty"`
+	Tags     map[string]string `yaml:"tags,omitempty"`
 }
 
 func (r *ResourceConfig) MarshalYAML() (interface{}, error) {
