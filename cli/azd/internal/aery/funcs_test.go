@@ -1,6 +1,8 @@
 package aery
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestUniqueString(t *testing.T) {
 	tests := []struct {
@@ -8,25 +10,11 @@ func TestUniqueString(t *testing.T) {
 		inputs []string
 		want   string
 	}{
-		{
-			name:   "empty",
-			inputs: []string{""},
-			want:   "aaaaaaaaaaaaa",
-		},
-		{
-			name:   "single",
-			inputs: []string{"sub-id"},
-			want:   "m3qsgok2tj3gw",
-		},
-		{
-			name: "multiple",
-			inputs: []string{
-				"sub-id",
-				"env-name",
-				"location",
-			},
-			want: "dshmwnunpaa2a",
-		},
+		{"empty", []string{""}, "aaaaaaaaaaaaa"},
+		{"single char", []string{"a"}, "eveiun73364hy"},
+		{"spaces", []string{"     "}, "ywy5tpb565m7y"},
+		{"sub-id", []string{"sub-id"}, "m3qsgok2tj3gw"},
+		{"sub-id env-name location", []string{"sub-id", "env-name", "location"}, "dshmwnunpaa2a"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
