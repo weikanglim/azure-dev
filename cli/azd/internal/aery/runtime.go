@@ -3,6 +3,7 @@ package aery
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -96,7 +97,8 @@ func Apply(
 		return fmt.Errorf("reading file: %w", err)
 	}
 
-	for i, resource := range resources {
+	for i := range resources {
+		resource := &resources[i]
 		// EXP: dynamic parent resolution. Evaluate if this is a good idea.
 		if isChildResource(resource.Kind) && resource.Parent == "" {
 			log.Println("dynamic-resolve: resolving parent for", resource.Name)
@@ -106,8 +108,9 @@ func Apply(
 				}
 
 				before, after, found := strings.Cut(resource.Kind, parent.Kind)
+				log.Printf("dynamic-resolve: cut(%s, %s): %s, %s, %t", resource.Kind, parent.Kind, before, after, found)
 				if found && before == "" && len(after) > 1 && after[0] == '/' && !strings.Contains(after[1:], "/") {
-					resources[i].Parent = parent.Kind + "/" + parent.Name
+					resource.Parent = parent.Kind + "/" + parent.Name
 					log.Printf("dynamic-resolve: found parent: %s", resource.Parent)
 					break
 				}
@@ -177,6 +180,17 @@ func Apply(
 
 		if !azruntime.HasStatusCode(resp, http.StatusCreated, http.StatusOK) {
 			return azruntime.NewResponseError(resp)
+		}
+
+		if resp.StatusCode == http.StatusCreated {
+			poller, err := azruntime.NewPoller[json.RawMessage](resp, pipeline, nil)
+			if err != nil {
+				return fmt.Errorf("failed creating poller: %w", err)
+			}
+
+			if _, err = poller.PollUntilDone(ctx, &azruntime.PollUntilDoneOptions{Frequency: 1 * time.Second}); err != nil {
+				return err
+			}
 		}
 
 		body, err := azruntime.Payload(resp)
