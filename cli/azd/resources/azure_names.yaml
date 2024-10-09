@@ -1,0 +1,1845 @@
+resourceTypes:
+  Microsoft.AlertsManagement/actionRules:
+    - name: Azure Monitor alert processing rule
+      abbreviation: apr
+  Microsoft.AnalysisServices/servers:
+    - name: Azure Analysis Services server
+      abbreviation: as
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: group
+        regex: ^[a-z][a-z0-9]{2,62}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers. Start with lowercase letter.
+  Microsoft.ApiManagement/service:
+    - name: API management service instance
+      abbreviation: apim
+      namingRules:
+        minLength: 1
+        maxLength: 50
+        uniquenessScope: global
+        regex: ^(?:[a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]{0,48}[a-zA-Z0-9])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, and hyphens. Start with letter, and end with alphanumeric.
+  Microsoft.App/containerApps:
+    - name: Container apps
+      abbreviation: ca
+  Microsoft.App/managedEnvironments:
+    - name: Container apps environment
+      abbreviation: cae
+  Microsoft.AppConfiguration/configurationStores:
+    - name: App Configuration store
+      abbreviation: appcs
+      namingRules:
+        minLength: 5
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_-]{5,50}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, and hyphens.
+  Microsoft.Authorization/locks:
+    - name: ""
+      abbreviation: lock
+      namingRules:
+        minLength: 1
+        maxLength: 90
+        uniquenessScope: scope of assignment
+        regex: ^[a-zA-Z0-9_\.()-]{0,89}[a-zA-Z0-9_()-]$
+        wordSeparator: '-'
+        restrictedChars:
+          suffix: .
+        messages:
+          onSuccess: Alphanumerics, periods, underscores, hyphens, and parenthesis.
+          onFailure: Can't end in period
+  Microsoft.Authorization/policyAssignments:
+    - name: ""
+      abbreviation: pas
+      namingRules:
+        minLength: 1
+        maxLength: 128
+        uniquenessScope: scope of assignment
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '%'
+          suffix: '. '
+        messages:
+          onFailure: Can't include percent sign and can't end with period or space.
+  Microsoft.Authorization/policyDefinitions:
+    - name: Azure Policy definition
+      abbreviation: policy
+      namingRules:
+        minLength: 1
+        maxLength: 128
+        uniquenessScope: scope of definition
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '%'
+          suffix: '. '
+        messages:
+          onSuccess: Display name can contain any characters.
+          onFailure: Can't include percent sign and can't end with period or space.
+  Microsoft.Authorization/policySetDefinitions:
+    - name: ""
+      abbreviation: init
+      namingRules:
+        minLength: 1
+        maxLength: 128
+        uniquenessScope: scope of definition
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '%'
+          suffix: '. '
+        messages:
+          onSuccess: Display name can contain any characters.
+          onFailure: Can't include percent sign and can't end with period or space.
+  Microsoft.Automation/automationAccounts:
+    - name: Automation account
+      abbreviation: aa
+      namingRules:
+        minLength: 6
+        maxLength: 50
+        uniquenessScope: resource group & region
+        regex: ^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter. End with alphanumeric.
+  Microsoft.Batch/batchAccounts:
+    - name: Batch accounts
+      abbreviation: ba
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: region
+        regex: ^[a-z0-9]{3,24}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers.
+  Microsoft.Blockchain/blockchainMembers:
+    - name: ""
+      abbreviation: blchm
+      namingRules:
+        minLength: 2
+        maxLength: 20
+        uniquenessScope: global
+        regex: ^[a-z][a-z0-9]{2,24}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers. Start with lowercase letter.
+  Microsoft.Blueprint/blueprintAssignments:
+    - name: ""
+      abbreviation: bpas
+      namingRules:
+        minLength: 1
+        maxLength: 90
+        uniquenessScope: tenant
+        regex: ^[a-zA-Z0-9-.]{1,90}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Letters, numbers, hyphens, and periods.
+  Microsoft.Blueprint/blueprints:
+    - name: Blueprint (planned for deprecation)
+      abbreviation: bp
+      namingRules:
+        minLength: 1
+        maxLength: 48
+        uniquenessScope: tenant
+        regex: ^[a-zA-Z0-9-.]{1,48}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Letters, numbers, hyphens, and periods.
+  Microsoft.Blueprint/blueprints/artifacts:
+    - name: Blueprint assignment (planned for deprecation)
+      abbreviation: bpa
+  Microsoft.BotService/botServices:
+    - name: Bot service
+      kind: azurebot
+      abbreviation: bot
+    - name: ""
+      abbreviation: botsvc
+      namingRules:
+        minLength: 2
+        maxLength: 64
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9_\.-]{1,63}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric.
+  Microsoft.BotService/enterpriseChannels:
+    - name: ""
+      abbreviation: botec
+      namingRules:
+        minLength: 2
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9_\.-]{1,63}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric.
+  Microsoft.Cache/Redis:
+    - name: Azure Cache for Redis instance
+      abbreviation: redis
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          consecutive: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+          onFailure: Consecutive hyphens not allowed.
+  Microsoft.Cdn/profiles:
+    - name: CDN profile
+      abbreviation: cdnp
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]{0,258}[a-zA-Z0-9])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+    - name: Front Door (Standard/Premium) profile
+      abbreviation: afd
+  Microsoft.Cdn/profiles/afdEndpoints:
+    - name: Front Door (Standard/Premium) endpoint
+      abbreviation: fde
+  Microsoft.Cdn/profiles/endpoints:
+    - name: CDN endpoint
+      abbreviation: cdne
+  Microsoft.CertificateRegistration/certificateOrders:
+    - name: ""
+      abbreviation: cerco
+      namingRules:
+        minLength: 3
+        maxLength: 30
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9]{3,30}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics.
+  Microsoft.CognitiveServices/accounts:
+    - name: Azure AI services
+      kind: AIServices
+      abbreviation: ais
+    - name: Azure OpenAI Service
+      kind: OpenAI
+      abbreviation: oai
+    - name: Computer vision
+      kind: ComputerVision
+      abbreviation: cv
+    - name: Content moderator
+      kind: ContentModerator
+      abbreviation: cm
+    - name: Content safety
+      kind: ContentSafety
+      abbreviation: cs
+    - name: Custom vision (prediction)
+      kind: CustomVision.Prediction
+      abbreviation: cstv
+    - name: Custom vision (training)
+      kind: CustomVision.Training
+      abbreviation: cstvt
+    - name: Document intelligence
+      kind: FormRecognizer
+      abbreviation: di
+    - name: Face API
+      kind: Face
+      abbreviation: face
+    - name: Health Insights
+      kind: HealthInsights
+      abbreviation: hi
+    - name: Immersive reader
+      kind: ImmersiveReader
+      abbreviation: ir
+    - name: Language service
+      kind: TextAnalytics
+      abbreviation: lang
+    - name: Speech service
+      kind: SpeechServices
+      abbreviation: spch
+    - name: Translator
+      kind: TextTranslation
+      abbreviation: trsl
+    - name: ""
+      abbreviation: cog
+      namingRules:
+        minLength: 2
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9-]{0,62}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+  Microsoft.Communication/communicationServices:
+    - name: Communication Services
+      abbreviation: acs
+  Microsoft.Compute/availabilitySets:
+    - name: Availability set
+      abbreviation: avail
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore
+  Microsoft.Compute/cloudServices:
+    - name: Cloud service
+      abbreviation: cld
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Compute/diskEncryptionSets:
+    - name: Disk encryption set
+      abbreviation: des
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_]{1,80}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics and underscores.
+  Microsoft.Compute/disks:
+    - name: Managed disk (OS)
+      abbreviation: disk
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_]{1,80}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics and underscores.
+    - name: Managed disk (data)
+      abbreviation: disk
+  Microsoft.Compute/galleries:
+    - name: Gallery
+      abbreviation: gal
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\.]{0,78}[a-zA-Z0-9])$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics and periods. Start and end with alphanumeric.
+  Microsoft.Compute/images:
+    - name: ""
+      abbreviation: cimg
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore
+  Microsoft.Compute/proximityPlacementGroups:
+    - name: Proximity placement group
+      abbreviation: ppg
+  Microsoft.Compute/restorePointCollections:
+    - name: Restore point collection
+      abbreviation: rpc
+  Microsoft.Compute/snapshots:
+    - name: Snapshot
+      abbreviation: snap
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore
+  Microsoft.Compute/sshPublicKeys:
+    - name: SSH key
+      abbreviation: sshkey
+  Microsoft.Compute/virtualMachineScaleSets:
+    - name: Virtual machine scale set
+      abbreviation: vmss
+      namingRules:
+        minLength: 1
+        maxLength: 15
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '/"''[]:|<>+=;,?*@& '
+          prefix: _
+          suffix: .-
+        messages:
+          onFailure: Backslash, slash, double quote, single quote, square brackets, colon, pipe, angle brackets, plus sign, equals sign, semi-colon, comma, question mark, asterisk, at sign, and ampersand. Can't use space. Can't start with underscore.  Can't end with period or hyphen.
+  Microsoft.Compute/virtualMachines:
+    - name: Virtual machine
+      abbreviation: vm
+      namingRules:
+        minLength: 1
+        maxLength: 15
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: /\'[]:|<>+=;,?*@&_ ."
+          suffix: '-'
+        messages:
+          onFailure: Backslash, slash, double quote, single quote, square brackets, colon, pipe, angle brackets, plus sign, equals sign, semi-colon, comma, question mark, asterisk, at sign, ampersand, and underscore. Can't include space or period. Can't end with hyphen.
+  Microsoft.ContainerInstance/containerGroups:
+    - name: Container instance
+      abbreviation: ci
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+          consecutive: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers, and hyphens.
+          onFailure: Can't start or end with hyphen. Consecutive hyphens aren't allowed.
+  Microsoft.ContainerRegistry/registries:
+    - name: Container registry
+      abbreviation: cr
+      namingRules:
+        minLength: 5
+        maxLength: 50
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9]{5,50}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics.
+  Microsoft.ContainerService/managedClusters:
+    - name: AKS cluster
+      abbreviation: aks
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_-]{0,61}[a-zA-Z0-9])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, and hyphens. Start and end with alphanumeric.
+  Microsoft.ContainerService/managedClusters/agentPools:
+    - name: AKS system node pool
+      abbreviation: npsystem
+    - name: AKS user node pool
+      abbreviation: np
+  Microsoft.ContainerServiceopenShiftManagedClusters:
+    - name: ""
+      abbreviation: osmc
+      namingRules:
+        minLength: 1
+        maxLength: 30
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9]{1,30}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics.
+  Microsoft.CustomProviders/associations:
+    - name: ""
+      abbreviation: cpas
+      namingRules:
+        minLength: 1
+        maxLength: 180
+        uniquenessScope: group
+        regex: ^(?:[^%&\\?/\. ]|[^%&\\?/]{1,179}[^. ])$
+        wordSeparator: '-'
+        restrictedChars:
+          global: '%&\?/'
+          consecutive: '. '
+        messages:
+          onFailure: Percent sign, ampersand, backslash, question mark, slash. Can't end with period or space.
+  Microsoft.CustomProviders/resourceProviders:
+    - name: ""
+      abbreviation: cprep
+      namingRules:
+        minLength: 3
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[^%&\\?/]{3,63}[^. ]$
+        wordSeparator: '-'
+        restrictedChars:
+          global: '%&\?/'
+          consecutive: '. '
+        messages:
+          onFailure: Percent sign, ampersand, backslash, question mark, slash. Can't end with period or space.
+  Microsoft.CustomerInsights/hubs:
+    - name: ""
+      abbreviation: cihub
+      namingRules:
+        minLength: 1
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[a-zA-Z][a-zA-Z0-9]{0,63}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics. Start with letter.
+  Microsoft.DBforMariaDB/servers:
+    - name: MariaDB server
+      abbreviation: maria
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Lowercase letters, hyphens and numbers.
+          onFailure: Can't start or end with hyphen.
+  Microsoft.DBforMariaDB/servers/databases:
+    - name: MariaDB database
+      abbreviation: mariadb
+  Microsoft.DBforMySQL/servers:
+    - name: MySQL database
+      abbreviation: mysql
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Lowercase letters, hyphens and numbers.
+          onFailure: Can't start or end with hyphen.
+  Microsoft.DBforPostgreSQL/serverGroupsv2:
+    - name: Azure Cosmos DB PostgreSQL cluster
+      abbreviation: cospos
+  Microsoft.DBforPostgreSQL/servers:
+    - name: PostgreSQL database
+      abbreviation: psql
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Lowercase letters, hyphens and numbers.
+          onFailure: Can't start or end with hyphen.
+  Microsoft.Dashboard/grafana:
+    - name: Azure Managed Grafana
+      abbreviation: amg
+  Microsoft.DataBox/jobs:
+    - name: ""
+      abbreviation: dbjob
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.-]{3,24}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, underscores and periods.
+  Microsoft.DataFactory/factories:
+    - name: Azure Data Factory
+      abbreviation: adf
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+  Microsoft.DataLakeAnalytics/accounts:
+    - name: Data Lake Analytics account
+      abbreviation: dla
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: global
+        regex: ^[a-z0-9]{3,24}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers.
+  Microsoft.DataLakeStore/accounts:
+    - name: Data Lake Store account
+      abbreviation: dls
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: global
+        regex: ^[a-z0-9]{3,24}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers.
+  Microsoft.DataMigration/services:
+    - name: Database Migration Service instance
+      abbreviation: dms
+      namingRules:
+        minLength: 2
+        maxLength: 62
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9_\.-]{1,61}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, periods, and underscores. Start with alphanumeric
+  Microsoft.DataProtection/backupVaults:
+    - name: Backup Vault name
+      abbreviation: bvault
+  Microsoft.DataProtection/backupVaults/backupPolicies:
+    - name: Backup Vault policy
+      abbreviation: bkpol
+  Microsoft.Databricks/workspaces:
+    - name: Azure Databricks workspace
+      abbreviation: dbw
+      namingRules:
+        minLength: 3
+        maxLength: 30
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_-]{3,30}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, and hyphens
+  Microsoft.DesktopVirtualization/applicationGroups:
+    - name: Virtual desktop application group
+      abbreviation: vdag
+  Microsoft.DesktopVirtualization/hostPools:
+    - name: Virtual desktop host pool
+      abbreviation: vdpool
+  Microsoft.DesktopVirtualization/scalingPlans:
+    - name: Virtual desktop scaling plan
+      abbreviation: vdscaling
+  Microsoft.DesktopVirtualization/workspaces:
+    - name: Virtual desktop workspace
+      abbreviation: vdws
+  Microsoft.DevTestLab/labs:
+    - name: ""
+      abbreviation: dtlab
+      namingRules:
+        minLength: 1
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_-]{1,50}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, and hyphens.
+  Microsoft.Devices/IotHubs:
+    - name: IoT hub
+      abbreviation: iot
+      namingRules:
+        minLength: 3
+        maxLength: 50
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          suffix: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+          onFailure: Can't end with hyphen.
+  Microsoft.Devices/provisioningServices:
+    - name: Provisioning services
+      abbreviation: provs
+      namingRules:
+        minLength: 3
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9-]{2,63}[a-zA-Z0-9])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. End with alphanumeric
+  Microsoft.Devices/provisioningServices/certificates:
+    - name: Provisioning services certificate
+      abbreviation: pcert
+  Microsoft.DigitalTwins/digitalTwinsInstances:
+    - name: Azure Digital Twin instance
+      abbreviation: dt
+  Microsoft.DocumentDB/databaseAccounts:
+    - name: ""
+      abbreviation: dbact
+      namingRules:
+        minLength: 3
+        maxLength: 44
+        uniquenessScope: global
+        regex: ^[a-z0-9][a-z0-9-]{2,43}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers, and hyphens. Start with lowercase letter or number.
+  Microsoft.DocumentDB/databaseAccounts/sqlDatabases:
+    - name: Azure Cosmos DB database
+      abbreviation: cosmos
+  Microsoft.EventGrid/domains:
+    - name: Event Grid domain
+      abbreviation: evgd
+      namingRules:
+        minLength: 3
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{3,50}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+  Microsoft.EventGrid/domains/topics:
+    - name: Event Grid topic
+      abbreviation: evgt
+  Microsoft.EventGrid/eventSubscriptions:
+    - name: Event Grid subscriptions
+      abbreviation: evgs
+      namingRules:
+        minLength: 3
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{3,64}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+  Microsoft.EventGrid/systemTopics:
+    - name: Event Grid system topic
+      abbreviation: egst
+  Microsoft.EventGrid/topics:
+    - name: ""
+      abbreviation: egtp
+      namingRules:
+        minLength: 3
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{3,50}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+  Microsoft.EventHub/clusters:
+    - name: ""
+      abbreviation: evhcl
+      namingRules:
+        minLength: 1
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]{0,48}[a-zA-Z0-9])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter.  End with letter or number.
+  Microsoft.EventHub/namespaces:
+    - name: Event Hubs namespace
+      abbreviation: evhns
+      namingRules:
+        minLength: 1
+        maxLength: 50
+        uniquenessScope: global
+        regex: ^(?:[a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]{0,48}[a-zA-Z0-9])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter.  End with letter or number.
+  Microsoft.EventHub/namespaces/eventHubs:
+    - name: Event hub
+      abbreviation: evh
+  Microsoft.HybridCompute/machines:
+    - name: Azure Arc enabled server
+      abbreviation: arcs
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.HybridCompute/privateLinkScopes:
+    - name: Azure Arc private link scope
+      abbreviation: pls
+  Microsoft.ImportExport/jobs:
+    - name: ""
+      abbreviation: iejob
+      namingRules:
+        minLength: 2
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[a-zA-Z][a-zA-Z0-9-]{1,63}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: 'Alphanumerics and hyphens. Start with letter.   '
+  Microsoft.Insights/actionGroups:
+    - name: Azure Monitor action group
+      abbreviation: ag
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: /&%\?
+          suffix: '. '
+        messages:
+          onFailure: Slash, ampersand, percent sign, backslash, and question mark. Can't end with space or period.
+  Microsoft.Insights/activityLogAlerts:
+    - name: ""
+      abbreviation: inala
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: <>*%{}&:\?+/#
+          suffix: '. '
+        messages:
+          onFailure: Angle brackets, asterisk, percent sign, curly brackets, ampersand, colon, backslash, question mark, plus sign, slash, and number sign. Can't end with space or period.
+  Microsoft.Insights/components:
+    - name: Application Insights
+      abbreviation: appi
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '%&\?/'
+          suffix: '. '
+        messages:
+          onFailure: Percent sign, ampersand, backslash, question mark, and slash. Can't end with space or period.
+  Microsoft.Insights/dataCollectionEndpoints:
+    - name: Data collection endpoint
+      abbreviation: dce
+  Microsoft.Insights/dataCollectionRules:
+    - name: Azure Monitor data collection rule
+      abbreviation: dcr
+  Microsoft.Insights/metricAlerts:
+    - name: ""
+      abbreviation: inma
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '*#&+:<>?@%{}/'
+          suffix: '. '
+        messages:
+          onFailure: Asterisk, number sign, ampersand, plus sign, colon, angle brackets, question mark, at sign, percent sign, curly brackets, backslash, and slash. Can't end with space or period.
+  Microsoft.Insights/scheduledQueryRules:
+    - name: ""
+      abbreviation: insqr
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: '*<>%{}&:\?/#'
+          suffix: '. '
+        messages:
+          onFailure: Asterisk, angle brackets, percent sign, curly brackets, ampersand, colon backslash, question mark, slash, and number sign. Can't end with space or period.
+  Microsoft.IoTCentral/IoTApps:
+    - name: ""
+      abbreviation: iotapp
+      namingRules:
+        minLength: 2
+        maxLength: 63
+        uniquenessScope: global
+        regex: ^[a-z0-9][a-z0-9-]{1,62}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers and hyphens. Start with lowercase letter or number
+  Microsoft.KeyVault/managedHSMs:
+    - name: Key Vault Managed HSM
+      abbreviation: kvmhsm
+  Microsoft.KeyVault/vaults:
+    - name: Key vault
+      abbreviation: kv
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          consecutive: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter. End with letter or number.
+          onFailure: Can't contain consecutive hyphens.
+  Microsoft.Kubernetes/connectedClusters:
+    - name: Azure Arc enabled Kubernetes cluster
+      abbreviation: arck
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Kusto/clusters:
+    - name: Azure Data Explorer cluster
+      abbreviation: dec
+      namingRules:
+        minLength: 4
+        maxLength: 22
+        uniquenessScope: global
+        regex: ^[a-z][a-z0-9]{3,21}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers. Start with letter.
+  Microsoft.Kusto/clusters/databases:
+    - name: Azure Data Explorer cluster database
+      abbreviation: dedb
+  Microsoft.LoadTestService/loadTests:
+    - name: Azure Load Testing instance
+      abbreviation: lt
+  Microsoft.Logic/integrationAccounts:
+    - name: Integration account
+      abbreviation: ia
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.()-]{1,80}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, underscores, periods, and parenthesis.
+  Microsoft.Logic/integrationServiceEnvironments:
+    - name: ""
+      abbreviation: lise
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.-]{1,80}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, periods, and underscores.
+  Microsoft.Logic/workflows:
+    - name: Logic app
+      abbreviation: logic
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.()-]{1,80}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, underscores, periods, and parenthesis.
+  Microsoft.MachineLearning/commitmentPlans:
+    - name: ""
+      abbreviation: mlcp
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: <>*%&:?+/\
+        messages:
+          onFailure: Angle brackets, asterisk, percent sign, ampersand, colon, backslash, question mark, plus sign, and slash. Can't end with a space.
+  Microsoft.MachineLearning/webServices:
+    - name: ""
+      abbreviation: mlweb
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: <>*%&:?+/\
+        messages:
+          onFailure: Angle brackets, asterisk, percent sign, ampersand, colon, backslash, question mark, plus sign, and slash. Can't end with a space.
+  Microsoft.MachineLearning/workspaces:
+    - name: ""
+      abbreviation: mlws
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: <>*%&:?+/\
+        messages:
+          onFailure: Angle brackets, asterisk, percent sign, ampersand, colon, backslash, question mark, plus sign, and slash. Can't end with a space.
+  Microsoft.MachineLearningServices/workspaces:
+    - name: Azure AI Studio hub
+      kind: Hub
+      abbreviation: hub
+    - name: Azure AI Studio project
+      kind: Project
+      abbreviation: proj
+    - name: Azure Machine Learning workspace
+      abbreviation: mlw
+      namingRules:
+        minLength: 3
+        maxLength: 33
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{3,33}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+  Microsoft.Maintenance/maintenanceConfigurations:
+    - name: Virtual machine maintenance configuration
+      abbreviation: mc
+  Microsoft.ManagedIdentity/userAssignedIdentities:
+    - name: Managed identity
+      abbreviation: id
+      namingRules:
+        minLength: 3
+        maxLength: 128
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9_-]{2,127}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, and underscores.  Start with letter or number.
+  Microsoft.Management/managementGroups:
+    - name: Management group
+      abbreviation: mg
+      namingRules:
+        uniquenessScope: tenant
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Maps/accounts:
+    - name: Maps account
+      abbreviation: map
+      namingRules:
+        minLength: 1
+        maxLength: 98
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,97}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric.
+  Microsoft.Media/mediaservices:
+    - name: ""
+      abbreviation: mms
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: group
+        regex: ^[a-z0-9]{3,24}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers.
+  Microsoft.Migrate/assessmentProjects:
+    - name: Azure Migrate project
+      abbreviation: migr
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Network/applicationGateways:
+    - name: Application gateway
+      abbreviation: agw
+      namingRules:
+        minLength: 1
+        maxLength: 24
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,22}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore.
+  Microsoft.Network/applicationSecurityGroups:
+    - name: Application security group (ASG)
+      abbreviation: asg
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore.
+  Microsoft.Network/azureFirewalls:
+    - name: Firewall
+      abbreviation: afw
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore.
+  Microsoft.Network/bastionHosts:
+    - name: Azure Bastion
+      abbreviation: bas
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore.
+  Microsoft.Network/connections:
+    - name: Connections
+      abbreviation: con
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End with alphanumeric or underscore.
+  Microsoft.Network/dnsForwardingRulesets:
+    - name: DNS forwarding ruleset
+      abbreviation: dnsfrs
+  Microsoft.Network/dnsResolvers:
+    - name: DNS private resolver
+      abbreviation: dnspr
+  Microsoft.Network/dnsResolvers/inboundEndpoints:
+    - name: DNS private resolver inbound endpoint
+      abbreviation: in
+  Microsoft.Network/dnsResolvers/outboundEndpoints:
+    - name: DNS private resolver outbound endpoint
+      abbreviation: out
+  Microsoft.Network/dnsZones:
+    - name: DNS
+      abbreviation: dnsz
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9_-]+[\.]){1,33}[a-zA-Z0-9_-]+$
+        wordSeparator: ""
+        messages:
+          onSuccess: Each label can contain alphanumerics, underscores, and hyphens. Each label is a set of characters separated by a period. For example, contoso.com has 2 labels. 2 to 34 labels.
+  Microsoft.Network/expressRouteCircuits:
+    - name: ""
+      abbreviation: erc
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/firewallPolicies:
+    - name: Firewall policy
+      abbreviation: afwp
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+    - name: Web Application Firewall (WAF) policy
+      abbreviation: waf
+  Microsoft.Network/firewallPolicies/ruleGroups:
+    - name: Web Application Firewall (WAF) policy rule group
+      abbreviation: wafrg
+  Microsoft.Network/frontDoors:
+    - name: Front Door (classic)
+      abbreviation: fd
+      namingRules:
+        minLength: 3
+        maxLength: 64
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9-]{1,62}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+  Microsoft.Network/frontdoorWebApplicationFirewallPolicies:
+    - name: Front Door firewall policy
+      abbreviation: fdfp
+      namingRules:
+        minLength: 1
+        maxLength: 128
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z]|[a-zA-Z][a-zA-Z0-9]{0,127})$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics. Start with letter.
+  Microsoft.Network/ipGroups:
+    - name: IP group
+      abbreviation: ipg
+  Microsoft.Network/loadBalancers:
+    - name: Load balancer (internal)
+      abbreviation: lbi
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+    - name: Load balancer (external)
+      abbreviation: lbe
+  Microsoft.Network/loadBalancers/inboundNatRules:
+    - name: Load balancer rule
+      abbreviation: rule
+  Microsoft.Network/localNetworkGateways:
+    - name: Local network gateway
+      abbreviation: lgw
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/natGateways:
+    - name: NAT gateway
+      abbreviation: ng
+  Microsoft.Network/networkInterfaces:
+    - name: Network interface (NIC)
+      abbreviation: nic
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/networkManagers:
+    - name: Virtual network manager
+      abbreviation: vnm
+  Microsoft.Network/networkSecurityGroups:
+    - name: Network security group (NSG)
+      abbreviation: nsg
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/networkSecurityGroups/securityRules:
+    - name: Network security group (NSG) security rules
+      abbreviation: nsgsr
+  Microsoft.Network/networkWatchers:
+    - name: Network Watcher
+      abbreviation: nw
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/privateDnsZones:
+    - name: DNS zone
+      abbreviation: pdnsz
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9_-]+\.){1,33}[a-zA-Z0-9_-]+$
+        wordSeparator: ""
+        messages:
+          onSuccess: Each label can contain alphanumerics, underscores, and hyphens. Each label is a set of characters separated by a period.  For example, contoso.com has 2 labels. 2 to 34 labels.
+  Microsoft.Network/privateEndpoints:
+    - name: Private endpoint
+      abbreviation: pep
+  Microsoft.Network/privateLinkServices:
+    - name: Private Link
+      abbreviation: pl
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Network/publicIPAddresses:
+    - name: Public IP address
+      abbreviation: pip
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/publicIPPrefixes:
+    - name: Public IP address prefix
+      abbreviation: ippre
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Network/routeFilters:
+    - name: Route filter
+      abbreviation: rf
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.-]{1,80}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens.
+  Microsoft.Network/routeTables:
+    - name: Route table
+      abbreviation: rt
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Network/routeTables/routes:
+    - name: User defined route (UDR)
+      abbreviation: udr
+  Microsoft.Network/serviceEndpointPolicies:
+    - name: ""
+      abbreviation: se
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/trafficManagerProfiles:
+    - name: Traffic Manager profile
+      abbreviation: traf
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Network/virtualHubs:
+    - name: Route server
+      abbreviation: rtserv
+    - name: Virtual WAN Hub
+      abbreviation: vhub
+  Microsoft.Network/virtualNetworkGateways:
+    - name: Virtual network gateway
+      abbreviation: vgw
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.-]{1,80}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens.
+  Microsoft.Network/virtualNetworks:
+    - name: Virtual network
+      abbreviation: vnet
+      namingRules:
+        minLength: 2
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens.  Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/virtualNetworks/subnets:
+    - name: Virtual network subnet
+      abbreviation: snet
+  Microsoft.Network/virtualNetworks/virtualNetworkPeerings:
+    - name: Virtual network peering
+      abbreviation: peer
+  Microsoft.Network/virtualWans:
+    - name: Virtual WAN
+      abbreviation: vwan
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens.  Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/vpnGateways:
+    - name: VPN Gateway
+      abbreviation: vpng
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\.-]{0,78}[a-zA-Z0-9_])$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens.  Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.Network/vpnGateways/vpnConnections:
+    - name: VPN connection
+      abbreviation: vcn
+  Microsoft.Network/vpnGateways/vpnSites:
+    - name: VPN site
+      abbreviation: vst
+  Microsoft.Network/vpnSites:
+    - name: ""
+      abbreviation: vpn
+      namingRules:
+        minLength: 1
+        maxLength: 80
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.-]{1,80}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric. End alphanumeric or underscore.
+  Microsoft.NotificationHubs/namespaces:
+    - name: Notification Hubs namespace
+      abbreviation: ntfns
+      namingRules:
+        minLength: 6
+        maxLength: 50
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9-]{6,50}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter. End with alphanumeric.
+  Microsoft.NotificationHubs/namespaces/notificationHubs:
+    - name: Notification Hubs
+      abbreviation: ntf
+  Microsoft.OperationalInsights/clusters:
+    - name: ""
+      abbreviation: opic
+      namingRules:
+        minLength: 4
+        maxLength: 63
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{4,63}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+  Microsoft.OperationalInsights/querypacks:
+    - name: Log Analytics query packs
+      abbreviation: pack
+  Microsoft.OperationalInsights/workspaces:
+    - name: Log Analytics workspace
+      abbreviation: log
+      namingRules:
+        minLength: 4
+        maxLength: 63
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9-]{4,63}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start and end with alphanumeric.
+  Microsoft.OperationsManagement/solutions:
+    - name: ""
+      abbreviation: opms
+      namingRules:
+        uniquenessScope: workspace
+        regex: ^[a-zA-Z]+[(][a-zA-Z-]+[)]$
+        wordSeparator: ""
+        messages:
+          onSuccess: 'For solutions authored by Microsoft, the name must be in the pattern: SolutionType(WorkspaceName). For solutions authored by third parties, the name must be in the pattern: SolutionType[WorkspaceName]. For example, a valid name is: AntiMalware(contoso-IT). The solution type is case-sensitive.'
+  Microsoft.Portal/dashboards:
+    - name: ""
+      abbreviation: pdash
+      namingRules:
+        minLength: 3
+        maxLength: 160
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{3,160}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+  Microsoft.PowerBI/workspaceCollections:
+    - name: ""
+      abbreviation: pbiwc
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: region
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          consecutive: '-'
+        messages:
+          onSuccess: 'Alphanumerics and hyphens. '
+          onFailure: Can't start with hyphen. Can't use consecutive hyphens.
+  Microsoft.PowerBIDedicated/capacities:
+    - name: Power BI Embedded
+      abbreviation: pbi
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: region
+        regex: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Lowercase letters or numbers Start with lowercase letter.  Start with lowercase letter.
+  Microsoft.Purview/accounts:
+    - name: Microsoft Purview instance
+      abbreviation: pview
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.RecoveryServices/vaults:
+    - name: Recovery Services vault
+      abbreviation: rsv
+      namingRules:
+        minLength: 2
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^[a-zA-Z][a-zA-Z0-9-]{1,49}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter.
+  Microsoft.Relay/namespaces:
+    - name: ""
+      abbreviation: rns
+      namingRules:
+        minLength: 6
+        maxLength: 50
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9-]{5,49}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter or number.
+  Microsoft.Resources/deployments:
+    - name: ""
+      abbreviation: dploy
+      namingRules:
+        minLength: 1
+        maxLength: 64
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.()-]{1,64}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, parentheses, hyphens, and periods.
+  Microsoft.Resources/resourceGroups:
+    - name: Resource group
+      abbreviation: rg
+      namingRules:
+        minLength: 1
+        maxLength: 90
+        uniquenessScope: subscription
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          suffix: .
+        messages:
+          onSuccess: Alphanumerics, underscores, parentheses, hyphens, periods, and unicode characters that match the regex documentation.
+          onFailure: Can't end with period.
+  Microsoft.Resources/tagNames:
+    - name: ""
+      abbreviation: rtn
+      namingRules:
+        minLength: 1
+        maxLength: 512
+        uniquenessScope: resource
+        regex: ^[^<>%&\\?/]{1,512}$
+        wordSeparator: '-'
+        restrictedChars:
+          global: <>%&\?/
+        messages:
+          onFailure: Angle brackets, percent sign, ampersand, backslash, question mark, and slash.
+  Microsoft.Resources/templateSpecs:
+    - name: Template specs name
+      abbreviation: ts
+      namingRules:
+        minLength: 1
+        maxLength: 90
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_\.()-]{1,90}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, underscores, parentheses, hyphens, and periods.
+  Microsoft.Search/searchServices:
+    - name: AI Search
+      abbreviation: srch
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.ServiceBus/namespaces:
+    - name: Service Bus namespace
+      abbreviation: sb
+      namingRules:
+        minLength: 6
+        maxLength: 50
+        uniquenessScope: global
+        regex: ^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter. End with alphanumeric.
+  Microsoft.ServiceBus/namespaces/queues:
+    - name: Service Bus queue
+      abbreviation: sbq
+  Microsoft.ServiceBus/namespaces/topics:
+    - name: Service Bus topic
+      abbreviation: sbt
+  Microsoft.ServiceBus/namespaces/topics/subscriptions:
+    - name: Service Bus topic subscription
+      abbreviation: sbts
+  Microsoft.ServiceFabric/clusters:
+    - name: Service Fabric cluster
+      abbreviation: sf
+      namingRules:
+        minLength: 4
+        maxLength: 23
+        uniquenessScope: region
+        regex: ^[a-z][a-z0-9-]{2,21}[a-z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers, and hyphens. Start with lowercase letter.  End with lowercase letter or number
+  Microsoft.ServiceFabric/managedClusters:
+    - name: Service Fabric managed cluster
+      abbreviation: sfmc
+  Microsoft.SignalRService/SignalR:
+    - name: SignalR
+      abbreviation: sigr
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: global
+        regex: ^[a-zA-Z][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter. End with alphanumeric.
+  Microsoft.SignalRService/webPubSub:
+    - name: WebPubSub
+      abbreviation: wps
+  Microsoft.Sql/managedInstances:
+    - name: SQL Managed Instance
+      abbreviation: sqlmi
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers, and hyphens.
+          onFailure: Can't start or end with hyphen.
+  Microsoft.Sql/servers:
+    - name: Azure SQL Database server
+      abbreviation: sql
+      namingRules:
+        minLength: 1
+        maxLength: 63
+        uniquenessScope: global
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers, and hyphens.
+          onFailure: Can't start or end with hyphen.
+  Microsoft.Sql/servers/databases:
+    - name: Azure SQL database
+      abbreviation: sqldb
+    - name: SQL Server Stretch Database
+      abbreviation: sqlstrdb
+  Microsoft.Sql/servers/elasticpool:
+    - name: Azure SQL Elastic Pool
+      abbreviation: sqlep
+  Microsoft.Sql/servers/jobAgents:
+    - name: Azure SQL Elastic Job agent
+      abbreviation: sqlja
+  Microsoft.StorSimple/managers:
+    - name: Azure StorSimple
+      abbreviation: ssimp
+      namingRules:
+        minLength: 2
+        maxLength: 50
+        uniquenessScope: group
+        regex: ^[a-zA-Z][a-zA-Z0-9-]{0,48}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens. Start with letter. End with alphanumeric.
+  Microsoft.Storage/blob:
+    - name: ""
+      abbreviation: sbl
+      namingRules:
+        minLength: 1
+        maxLength: 1024
+        uniquenessScope: container
+        regex: ^[A-Za-z0-9-_\.~]{1,1000}([A-Za-z0-9-_\.~]{0,24})$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Any URL characters, case sensitive.
+  Microsoft.Storage/queue:
+    - name: ""
+      abbreviation: squ
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: storage account
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+          consecutive: '-'
+        messages:
+          onSuccess: Lowercase letters, numbers, and hyphens.
+          onFailure: Can't start or end with hyphen. Can't use consecutive hyphens.
+  Microsoft.Storage/storageAccounts:
+    - name: Storage account
+      abbreviation: st
+      namingRules:
+        minLength: 3
+        maxLength: 24
+        uniquenessScope: global
+        regex: ^[a-z0-9]{3,24}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Lowercase letters and numbers.
+  Microsoft.Storage/storageAccounts/fileServices/shares:
+    - name: File share
+      abbreviation: share
+  Microsoft.Storage/table:
+    - name: ""
+      abbreviation: sta
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: storage account
+        regex: ^[a-zA-Z][a-zA-Z0-9]{2,62}$
+        wordSeparator: ""
+        messages:
+          onSuccess: Alphanumerics. Start with letter.
+  Microsoft.StorageSync/storageSyncServices:
+    - name: Storage Sync Service name
+      abbreviation: sss
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          suffix: '. '
+        messages:
+          onSuccess: Alphanumerics, spaces, periods, hyphens, and underscores.
+          onFailure: Can't end with period or space.
+  Microsoft.StreamAnalytics/cluster:
+    - name: Azure Stream Analytics
+      abbreviation: asa
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.StreamAnalytics/streamingjobs:
+    - name: ""
+      abbreviation: sasj
+      namingRules:
+        minLength: 3
+        maxLength: 63
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9_-]{3,63}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics, hyphens, and underscores.
+  Microsoft.Subscription/subscriptions:
+    - name: ""
+      abbreviation: subcr
+      namingRules:
+        uniquenessScope: tenant
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Synapse/privateLinkHubs:
+    - name: Azure Synapse Analytics private link hub
+      abbreviation: synplh
+  Microsoft.Synapse/workspaces:
+    - name: Azure Synapse Analytics workspaces
+      abbreviation: synw
+      namingRules:
+        uniquenessScope: ""
+        regex: ""
+        wordSeparator: '-'
+  Microsoft.Synapse/workspaces/bigDataPools:
+    - name: Azure Synapse Analytics Spark Pool
+      abbreviation: synsp
+  Microsoft.Synapse/workspaces/sqlPools:
+    - name: Azure Synapse Analytics SQL Dedicated Pool
+      abbreviation: syndp
+  Microsoft.TimeSeriesInsights/environments:
+    - name: Time Series Insights environment
+      abbreviation: tsi
+      namingRules:
+        minLength: 1
+        maxLength: 90
+        uniquenessScope: group
+        regex: ^[^'<>%&:\\?/#]{1,90}$
+        wordSeparator: '-'
+        restrictedChars:
+          global: '''<>%&:\?/#'
+        messages:
+          onFailure: Single quote, angle brackets, percent sign, ampersand, colon, backslash, question mark, slash, and number sign.
+  Microsoft.VideoIndexer/accounts:
+    - name: Azure AI Video Indexer
+      abbreviation: avi
+  Microsoft.VirtualMachineImages/imageTemplates:
+    - name: Image template
+      abbreviation: it
+  Microsoft.Web/certificates:
+    - name: ""
+      abbreviation: wbcer
+      namingRules:
+        minLength: 1
+        maxLength: 260
+        uniquenessScope: group
+        regex: ""
+        wordSeparator: ""
+        restrictedChars:
+          global: /
+        messages:
+          onFailure: Slash
+  Microsoft.Web/hostingEnvironments:
+    - name: App Service environment
+      abbreviation: ase
+  Microsoft.Web/serverFarms:
+    - name: App Service plan
+      abbreviation: asp
+      namingRules:
+        minLength: 1
+        maxLength: 40
+        uniquenessScope: group
+        regex: ^[a-zA-Z0-9-]{1,40}$
+        wordSeparator: '-'
+        messages:
+          onSuccess: Alphanumerics and hyphens.
+  Microsoft.Web/sites:
+    - name: Function app
+      kind: functionapp
+      abbreviation: func
+      namingRules:
+        minLength: 2
+        maxLength: 60
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9-]{0,58}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Contains alphanumerics and hyphens.
+          onFailure: Can't start or end with hyphen.
+    - name: Web app
+      kind: app
+      abbreviation: app
+      namingRules:
+        minLength: 2
+        maxLength: 60
+        uniquenessScope: global
+        regex: ^[a-zA-Z0-9][a-zA-Z0-9-]{0,58}[a-zA-Z0-9]$
+        wordSeparator: '-'
+        restrictedChars:
+          prefix: '-'
+          suffix: '-'
+        messages:
+          onSuccess: Contains alphanumerics and hyphens.
+          onFailure: Can't start or end with hyphen.
+  Microsoft.Web/staticSites:
+    - name: Static web app
+      abbreviation: stapp
+  Microsoft.serviceEndPointPolicies:
+    - name: Service endpoint policy
+      abbreviation: se
