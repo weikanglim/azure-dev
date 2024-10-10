@@ -1,15 +1,16 @@
-input: _
+input: _ // the app resource present in azure.yaml
+ctx: [for _ in output {}]
 
 output: [{
-	name:       input.tags.name
-	kind:       "Microsoft.CognitiveServices/accounts"
+	name:       ctx[0].name
+	type:       "Microsoft.CognitiveServices/accounts"
 	apiVersion: "2023-05-01"
 	spec: {
 		kind:     "OpenAI"
 		location: input.location
-		tags: input.tags
+		tags:     ctx[0].tags
 		properties: {
-			customSubDomainName: input.tags.name
+			customSubDomainName: ctx[0].name
 			publicNetworkAccess: "Enabled"
 			disableLocalAuth:    true
 		}
@@ -18,11 +19,11 @@ output: [{
 }, {
 	name: input.name
 	// parent: ${} -- defaults to the matching parent in the current module
-	kind:       "Microsoft.CognitiveServices/accounts/deployments"
+	type:       "Microsoft.CognitiveServices/accounts/deployments"
 	apiVersion: "2023-05-01"
 	spec: {
 		location: input.location
-		tags: input.tags
+		tags:     ctx[1].tags
 		properties: {
 			model: {
 				format:  "OpenAI"

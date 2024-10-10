@@ -33,8 +33,8 @@ type ResourceSpec struct {
 	// - kind/name - A reference to a resource in a different file.
 	// (unhandled) - sub/rg/kind/name - A reference to a resource in a different file, possibly existing.
 	Parent string `yaml:"parent"`
-	// The kind of the resource.
-	Kind string `yaml:"kind"`
+	// The type of the resource.
+	Type string `yaml:"type"`
 	// The API version of the resource.
 	APIVersion string `yaml:"apiVersion"`
 	// The resource properties.
@@ -100,17 +100,17 @@ func Apply(
 	for i := range resources {
 		resource := &resources[i]
 		// EXP: dynamic parent resolution. Evaluate if this is a good idea.
-		if isChildResource(resource.Kind) && resource.Parent == "" {
+		if isChildResource(resource.Type) && resource.Parent == "" {
 			log.Println("dynamic-resolve: resolving parent for", resource.Name)
 			for j, parent := range resources {
 				if i == j {
 					continue
 				}
 
-				before, after, found := strings.Cut(resource.Kind, parent.Kind)
-				log.Printf("dynamic-resolve: cut(%s, %s): %s, %s, %t", resource.Kind, parent.Kind, before, after, found)
+				before, after, found := strings.Cut(resource.Type, parent.Type)
+				log.Printf("dynamic-resolve: cut(%s, %s): %s, %s, %t", resource.Type, parent.Type, before, after, found)
 				if found && before == "" && len(after) > 1 && after[0] == '/' && !strings.Contains(after[1:], "/") {
-					resource.Parent = parent.Kind + "/" + parent.Name
+					resource.Parent = parent.Type + "/" + parent.Name
 					log.Printf("dynamic-resolve: found parent: %s", resource.Parent)
 					break
 				}
@@ -140,16 +140,16 @@ func Apply(
 		fmt.Printf("  applying %s...\n", resource.Name)
 		resStart := time.Now()
 		location := fmt.Sprintf("%s/providers/%s/%s?api-version=%s",
-			endpoint, resource.Kind, resource.Name, resource.APIVersion)
+			endpoint, resource.Type, resource.Name, resource.APIVersion)
 		if resource.Parent != "" {
 			//IMPROVE: handle full resource IDs
-			lastSlash := strings.LastIndex(resource.Kind, "/")
-			if len(resource.Parent) < lastSlash || resource.Parent[:lastSlash] != resource.Kind[:lastSlash] {
+			lastSlash := strings.LastIndex(resource.Type, "/")
+			if len(resource.Parent) < lastSlash || resource.Parent[:lastSlash] != resource.Type[:lastSlash] {
 				return fmt.Errorf("parent resource %s is not a valid parent for resource %s", resource.Parent, resource.Name)
 			}
-			base := resource.Kind[:lastSlash]
+			base := resource.Type[:lastSlash]
 			parentSegment := resource.Parent[lastSlash:]
-			childSegment := resource.Kind[lastSlash:]
+			childSegment := resource.Type[lastSlash:]
 			location = fmt.Sprintf("%s/providers/%s%s%s/%s?api-version=%s",
 				endpoint, base, parentSegment, childSegment, resource.Name, resource.APIVersion)
 		}

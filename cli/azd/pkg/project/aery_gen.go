@@ -9,6 +9,7 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
 	"cuelang.org/go/pkg/encoding/yaml"
+	"github.com/azure/azure-dev/cli/azd/internal/aerygen"
 	"github.com/azure/azure-dev/cli/azd/pkg/osutil"
 	"github.com/azure/azure-dev/cli/azd/resources"
 )
@@ -23,6 +24,14 @@ type GenerateOptions struct {
 	Root string
 	// fs is the file system to write the generated files to.
 	fs Fs
+}
+
+// genContext is the context for generating a resource definition.
+type genContext struct {
+	// The actual name of the resource after name translation
+	Name string `json:"name"`
+	// The tags to apply
+	Tags map[string]string `json:"tags"`
 }
 
 // GenerateResourceDefinitions generates resource definition files from a service definition.
@@ -41,25 +50,55 @@ func GenerateResourceDefinitions(
 		}
 
 		value = ctx.CompileBytes(cueFile)
-		if value.Err() != nil {
-			return fmt.Errorf("error building CUE value: %v", value.Err())
-		}
 	default:
 		return fmt.Errorf("unsupported resource type: %v", resConfig.Type)
 	}
 
 	// add encoding for resConfig
 	val := value.FillPath(cue.ParsePath("input"), *resConfig)
-	if val.Err() != nil {
-		return fmt.Errorf("error filling value: %v", val.Err())
+	if err := val.Err(); err != nil {
+		return fmt.Errorf("error filling input: %v", err)
 	}
 
-	curr, err := val.LookupPath(cue.ParsePath("input")).MarshalJSON()
+	iter, err := val.LookupPath(cue.ParsePath("output")).List()
 	if err != nil {
-		return fmt.Errorf("error marshaling value: %v", err)
+		return fmt.Errorf("error getting output list: %v", err)
 	}
 
-	log.Println(curr)
+	i := 0
+	for iter.Next() {
+		outputVal := iter.Value()
+
+		name, err := aerygen.Name(outputVal)
+		if err != nil {
+			return fmt.Errorf("error translating name: %w", err)
+		}
+
+		genCtx := genContext{}
+		genCtx.Name = name
+		genCtx.Tags = resConfig.Tags
+		// improve: we can add more context here
+
+		// set the name
+		val = val.FillPath(cue.ParsePath(fmt.Sprintf("ctx[%d]", i)), genCtx)
+		i++
+	}
+
+	contents, err := val.MarshalJSON()
+	if err != nil {
+		return fmt.Errorf("error marshaling result: %v", err)
+	}
+	log.Println("cue evaluation:")
+	log.Println(string(contents))
+
+	// What do I want to do:
+	// 1. Generate a single file with multiple YAML documents
+	// 2. Want the generation also be a single file
+	// 3. Want the name generation to be done in go
+
+	// Solution:
+
+	// Loop through each thing, fill the name.
 
 	// Marshal the result back to CUE syntax
 	bytes, err := yaml.MarshalStream(val.LookupPath(cue.ParsePath("output")))

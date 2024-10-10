@@ -33,3 +33,6 @@ var PipelineFiles embed.FS
 
 //go:embed aery-gen/*
 var AeryGen embed.FS
+
+//go:embed azure_names.yaml
+var AzureNames []byte

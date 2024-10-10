@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	//nolint:ST1001
+	. "github.com/azure/azure-dev/cli/azd/internal/aerygen"
 	"github.com/braydonk/yaml"
 	flag "github.com/spf13/pflag"
 )
@@ -23,56 +25,6 @@ var (
 	// /Users/weilim/repos/azure-dev/cli/azd/resources/aery-gen/names.yaml
 	outFile = flag.String("out-file", "names.yaml", "Output file")
 )
-
-// Azure naming conventions.
-type AzureNames struct {
-	// Conventions groupe by resource types, with their associated kinds.
-	Types map[string][]ResourceKind `yaml:"resourceTypes"`
-}
-
-// A resource kind. A resource type can have multiple kinds.
-// In the default case, a resource type has a single kind that is empty.
-type ResourceKind struct {
-	// Display name of the resource kind.
-	Name string `yaml:"name"`
-	// The kind of the resource. Empty for resources with just types but no kinds.
-	Kind string `yaml:"kind,omitempty"`
-	// A custom kind. The value that determines the kind is embedded somewhere as a property in the resource JSON.
-	CustomKind CustomKind `yaml:"customKind,omitempty"`
-	// Short name abbreviation for new resources.
-	Abbreviation string `yaml:"abbreviation"`
-	// The rules for naming a resource.
-	NamingRules NamingRules `yaml:"namingRules,omitempty"`
-}
-
-// The rules for naming a resource.
-type NamingRules struct {
-	MinLength       int    `yaml:"minLength,omitempty"`
-	MaxLength       int    `yaml:"maxLength,omitempty"`
-	UniquenessScope string `yaml:"uniquenessScope"`
-	Regex           string `yaml:"regex"`
-	WordSeparator   string `yaml:"wordSeparator"`
-
-	RestrictedChars RestrictedChars `yaml:"restrictedChars,omitempty"`
-	Messages        Messages        `yaml:"messages,omitempty"`
-}
-
-type CustomKind struct {
-	PropertyPath string `yaml:"propertyPath,omitempty"`
-	Value        any    `yaml:"value,omitempty"`
-}
-
-type Messages struct {
-	OnSuccess string `yaml:"onSuccess,omitempty"`
-	OnFailure string `yaml:"onFailure,omitempty"`
-}
-
-type RestrictedChars struct {
-	Global      string `yaml:"global,omitempty"`
-	Prefix      string `yaml:"prefix,omitempty"`
-	Suffix      string `yaml:"suffix,omitempty"`
-	Consecutive string `yaml:"consecutive,omitempty"`
-}
 
 func run() error {
 	// map of resource type to resource
@@ -95,7 +47,7 @@ func run() error {
 		for _, kind := range resources[resType] {
 			if kind.Kind != "" {
 				fmt.Printf("- %s:%s\n", resType, kind.Kind)
-			} else if kind.CustomKind.Value != nil {
+			} else if kind.CustomKind.Value != "" {
 				fmt.Printf("- %s:%s\n", resType, kind.CustomKind.Value)
 			} else {
 				fmt.Printf("- %s\n", resType)
@@ -476,24 +428,6 @@ type namingToolResourceTypes struct {
 }
 
 func main() {
-	// regex := `^[A-Za-z0-9-_\.~]{1,1000}([A-Za-z0-9-_\.~]{0,24})$`
-	// fmt.Printf("regex: %s\n", regex)
-
-	// nameRegex, cerr := regexp.Compile(regex)
-	// if cerr != nil {
-	// 	fmt.Fprintf(os.Stderr, "error: compiling regex: %v\n", cerr)
-	// 	os.Exit(1)
-	// }
-
-	// s := ""
-	// for i := 0; i < 1024; i++ {
-	// 	s += "a"
-	// }
-
-	// // then, validate if the regex accepts hyphens
-	// fmt.Printf("match: %t\n", nameRegex.MatchString(s))
-	// os.Exit(0)
-
 	flag.Parse()
 	if token == nil || *token == "" {
 		*token = os.Getenv("GITHUB_TOKEN")
