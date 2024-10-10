@@ -129,6 +129,53 @@ func (am *AssignmentsManager) Assignment(ctx context.Context) (*Assignment, erro
 	}, nil
 }
 
+func (am *AssignmentsManager) CachedAssignment(ctx context.Context) (*Assignment, error) {
+	cachedAssignment, err := am.readResponseFromCache()
+	if err != nil {
+		log.Printf("could not read assignment from cache: %v", err)
+	}
+
+	if cachedAssignment == nil {
+		req := &variantAssignmentRequest{
+			Parameters: map[string]string{
+				MachineIdParameterName:  resource.MachineId(),
+				AzdVersionParameterName: internal.VersionInfo().Version.String(),
+			},
+		}
+
+		assignment, err := am.client.GetVariantAssignments(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+		if err := am.cacheResponse(assignment); err != nil {
+			log.Printf("failed to cache assignment response: %v", err)
+		}
+
+		cachedAssignment = assignment
+	}
+
+	var configs []AssignmentConfig
+
+	if cachedAssignment.Configs != nil {
+		configs = make([]AssignmentConfig, len(cachedAssignment.Configs))
+
+		for i, config := range cachedAssignment.Configs {
+			configs[i] = AssignmentConfig{
+				ID:         config.ID,
+				Parameters: config.Parameters,
+			}
+		}
+	}
+
+	return &Assignment{
+		Features:          cachedAssignment.Features,
+		Flights:           cachedAssignment.Flights,
+		Configs:           configs,
+		ParameterGroups:   cachedAssignment.ParameterGroups,
+		AssignmentContext: cachedAssignment.AssignmentContext,
+	}, nil
+}
+
 // errCacheExpired is returned when the cached data is out of date.
 var errCacheExpired = errors.New("cache expired")
 
