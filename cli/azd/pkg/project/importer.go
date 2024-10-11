@@ -283,18 +283,18 @@ func generateAery(root string, prj *ProjectConfig, env *environment.Environment)
 	memFs := memfs.New()
 	for _, res := range prj.Resources {
 		newRes := *res
-		name, err := aery.UniqueString(env.Name())
+		token, err := aery.UniqueString(env.Name())
 		if err != nil {
-			return nil, fmt.Errorf("generating unique name: %w", err)
+			return nil, fmt.Errorf("generating unique token: %w", err)
 		}
 		newRes.Tags = map[string]string{
-			"name": "cog-" + name,
+			"tags": "working",
 		}
 		newRes.Location = env.GetLocation()
 
 		if newRes.Type == ResourceTypeOpenAiModel {
 			//TODO: think about what root means for in-memory vs on-disk layout
-			err := GenerateResourceDefinitions(&newRes, "", GenerateOptions{Root: root, fs: memFs})
+			err := GenerateResourceDefinitions(&newRes, "", GenerateOptions{Root: root, fs: memFs, Token: token})
 			if err != nil {
 				return nil, fmt.Errorf("generating resource definitions: %w", err)
 			}

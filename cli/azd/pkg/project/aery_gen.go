@@ -20,6 +20,8 @@ type Fs interface {
 }
 
 type GenerateOptions struct {
+	//TODO: Remove
+	Token string
 	// Root is the root directory to write the generated files to.
 	Root string
 	// fs is the file system to write the generated files to.
@@ -41,6 +43,8 @@ func GenerateResourceDefinitions(
 	options GenerateOptions) error {
 	ctx := cuecontext.New()
 	var value cue.Value
+
+	// first determine if we're inside a group or subscription
 
 	switch resConfig.Type {
 	case ResourceTypeOpenAiModel:
@@ -69,7 +73,7 @@ func GenerateResourceDefinitions(
 	for iter.Next() {
 		outputVal := iter.Value()
 
-		name, err := aerygen.Name(outputVal)
+		name, err := aerygen.Name(options.Token, outputVal)
 		if err != nil {
 			return fmt.Errorf("error translating name: %w", err)
 		}
