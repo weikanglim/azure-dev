@@ -31,8 +31,8 @@ type GenerateOptions struct {
 
 // genContext is the context for generating a resource definition.
 type genContext struct {
-	// The actual name of the resource after name translation
-	Name string `json:"name"`
+	// The alias of the resource
+	Alias string `json:"alias"`
 	// The tags to apply
 	Tags map[string]string `json:"tags"`
 }
@@ -136,13 +136,13 @@ func generateFile(
 	for iter.Next() {
 		outputVal := iter.Value()
 
-		name, err := aerygen.Name(options.Token, outputVal)
+		alias, err := aerygen.Alias(outputVal)
 		if err != nil {
-			return fmt.Errorf("error translating name: %w", err)
+			return fmt.Errorf("getting alias: %w", err)
 		}
 
 		genCtx := genContext{}
-		genCtx.Name = name
+		genCtx.Alias = alias
 		genCtx.Tags = input.Tags
 		// improve: we can add more context here
 

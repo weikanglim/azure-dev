@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	//nolint:ST1001
-	. "github.com/azure/azure-dev/cli/azd/internal/aerygen"
+	"github.com/azure/azure-dev/cli/azd/pkg/azure"
 	"github.com/braydonk/yaml"
 	flag "github.com/spf13/pflag"
 )
@@ -28,7 +28,7 @@ var (
 
 func run() error {
 	// map of resource type to resource
-	resources := map[string][]ResourceKind{}
+	resources := map[string][]azure.ResourceKind{}
 	err := addAbbreviations(resources)
 	if err != nil {
 		return fmt.Errorf("adding abbreviations: %w", err)
@@ -61,7 +61,7 @@ func run() error {
 	buf := bytes.Buffer{}
 	enc := yaml.NewEncoder(&buf)
 	enc.SetIndent(2)
-	err = enc.Encode(AzureNames{Types: resources})
+	err = enc.Encode(azure.AzureNames{Types: resources})
 	if err != nil {
 		return fmt.Errorf("marshaling: %w", err)
 	}
@@ -78,7 +78,7 @@ var unsupportedTypes = map[string]struct{}{
 	"Microsoft.HDInsight/clusters": {},
 }
 
-func addAbbreviations(resources map[string][]ResourceKind) error {
+func addAbbreviations(resources map[string][]azure.ResourceKind) error {
 	content, err := fetchGithub(
 		*token,
 		"MicrosoftDocs/cloud-adoption-framework",
@@ -111,7 +111,7 @@ func addAbbreviations(resources map[string][]ResourceKind) error {
 				return fmt.Errorf("parsing '%s': invalid number of columns", line)
 			}
 
-			res := ResourceKind{}
+			res := azure.ResourceKind{}
 			res.Name = strings.TrimSpace(elements[0])
 
 			if strings.HasPrefix(res.Name, "Azure Cosmos DB for") {
@@ -178,7 +178,7 @@ func parseResourceType(markdownString string) (resType string, resKind string) {
 	}
 }
 
-func addNamingRules(resources map[string][]ResourceKind) error {
+func addNamingRules(resources map[string][]azure.ResourceKind) error {
 	content, err := fetchGithub(
 		*token,
 		"mspnp/AzureNamingTool",
@@ -230,7 +230,7 @@ func addNamingRules(resources map[string][]ResourceKind) error {
 			"Microsoft.Resources/templateSpecs":        "", // choose 'ts' over 'tspec'
 		}
 
-		var upsert *ResourceKind
+		var upsert *azure.ResourceKind
 		new := true
 
 		if _, ok := unsupportedTypes[resourceType]; ok {
@@ -266,7 +266,7 @@ func addNamingRules(resources map[string][]ResourceKind) error {
 			}
 
 			if upsert == nil {
-				upsert = &ResourceKind{
+				upsert = &azure.ResourceKind{
 					Kind: kind,
 					// Name:         don't have a name,
 					Abbreviation: r.ShortName,
@@ -294,14 +294,14 @@ func addNamingRules(resources map[string][]ResourceKind) error {
 				}
 			} // else r.Short == upsert.Abbreviation, nothing to do
 		} else {
-			upsert = &ResourceKind{
+			upsert = &azure.ResourceKind{
 				Kind: kind,
 				// Name:         don't have a name,
 				Abbreviation: r.ShortName,
 			}
 		}
 
-		rule := NamingRules{}
+		rule := azure.NamingRules{}
 
 		if strings.Contains(r.Regx, "(?!") { // Perl-style negative lookahead not supported
 			// do nothing currently
@@ -361,12 +361,12 @@ func addNamingRules(resources map[string][]ResourceKind) error {
 		}
 		rule.UniquenessScope = scope
 
-		messages := Messages{}
+		messages := azure.Messages{}
 		messages.OnFailure = r.InvalidText
 		messages.OnSuccess = r.ValidText
 		rule.Messages = messages
 
-		restrictedChars := RestrictedChars{}
+		restrictedChars := azure.RestrictedChars{}
 		restrictedChars.Global = r.InvalidCharacters
 		restrictedChars.Prefix = r.InvalidCharactersStart
 		restrictedChars.Suffix = r.InvalidCharactersEnd

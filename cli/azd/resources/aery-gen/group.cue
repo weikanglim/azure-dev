@@ -2,7 +2,7 @@ input: _
 ctx: [for _ in output {}]
 
 output: [{
-	name:       ctx[0].name
+	alias:       ctx[0].alias
 	type:       "Microsoft.Resources/resourceGroups"
 	apiVersion: "2022-09-01"
 	spec: {

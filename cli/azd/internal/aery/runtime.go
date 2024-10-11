@@ -24,10 +24,10 @@ import (
 )
 
 type ResourceSpec struct {
-	// The name of the resource.
+	// The explicit name of the resource.
 	Name string `yaml:"name"`
-	// Optional. The ID of the resource. When specified, this overrides the default ID-to-name translation.
-	ID string `yaml:"id"`
+	// The alias used to generate an explicit name. If not provided, the name is used as-is.
+	Alias string `yaml:"alias"`
 	// Optional. The parent resource of the resource.
 	// Can be:
 	// - name - The name in the same file.
@@ -219,6 +219,28 @@ func applyResource(
 	endpoint := fmt.Sprintf("https://management.azure.com/subscriptions/%s", subscriptionId)
 	if group != "" {
 		endpoint = fmt.Sprintf("%s/resourceGroups/%s", endpoint, group)
+	}
+
+	// TODO: eval loop
+	if resource.Name == "" && resource.Alias == "" {
+		// TODO: should include file name
+		return fmt.Errorf("resource %s must specify either name or alias", resource.Type)
+	} else if resource.Name != "" && resource.Alias != "" {
+		return fmt.Errorf("resource %s cannot specify both name and alias", resource.Name)
+	}
+
+	if resource.Name == "" && resource.Alias != "" {
+		uniqueToken, err := UniqueString(subscriptionId, group, resource.Alias)
+		if err != nil {
+			return fmt.Errorf("generating unique token: %w", err)
+		}
+
+		name, err := Name(uniqueToken, *resource)
+		if err != nil {
+			return fmt.Errorf("generating unique name for alias: %w", err)
+		}
+
+		resource.Name = name
 	}
 
 	fmt.Printf("  applying %s...\n", resource.Name)

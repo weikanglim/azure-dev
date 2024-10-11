@@ -2,7 +2,7 @@ input: _ // the app resource present in azure.yaml
 ctx: [for _ in output {}]
 
 output: [{
-	name:       ctx[0].name
+	alias:  ctx[0].alias
 	type:       "Microsoft.CognitiveServices/accounts"
 	apiVersion: "2023-05-01"
 	spec: {
@@ -10,7 +10,7 @@ output: [{
 		location: input.location
 		tags:     ctx[0].tags
 		properties: {
-			customSubDomainName: ctx[0].name
+			customSubDomainName: "${.name}"
 			publicNetworkAccess: "Enabled"
 			disableLocalAuth:    true
 		}
