@@ -26,7 +26,7 @@ resourceTypes:
           onSuccess: Alphanumerics, and hyphens. Start with letter, and end with alphanumeric.
   Microsoft.App/containerApps:
     - name: Container apps
-      abbreviation: ca
+      abbreviation: ""
   Microsoft.App/managedEnvironments:
     - name: Container apps environment
       abbreviation: cae

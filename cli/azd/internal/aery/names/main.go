@@ -39,6 +39,13 @@ func run() error {
 		return fmt.Errorf("adding naming rules: %w", err)
 	}
 
+	if app, ok := resources["Microsoft.App/containerApps"]; ok {
+		// we don't want abbreviation for container apps
+		for _, kind := range app {
+			kind.Abbreviation = ""
+		}
+	}
+
 	kindCount := 0
 	resourceTypes := slices.Collect(maps.Keys(resources))
 	slices.Sort(resourceTypes)
