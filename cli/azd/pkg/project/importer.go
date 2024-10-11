@@ -214,6 +214,12 @@ func (im *ImportManager) ProjectInfrastructure(ctx context.Context, projectConfi
 			return nil, fmt.Errorf("writing infrastructure: %w", err)
 		}
 
+		// improve: do the overlaying in-memory
+		err = copy.Copy(infraRoot, tmpDir)
+		if err != nil {
+			return nil, fmt.Errorf("overlay infrastructure: %w", err)
+		}
+
 		return &Infra{
 			Options: provisioning.Options{
 				Provider: provisioning.Aery,
@@ -281,6 +287,9 @@ func (im *ImportManager) ProjectInfrastructure(ctx context.Context, projectConfi
 
 func generateAery(root string, prj *ProjectConfig, env *environment.Environment) (*memfs.FS, error) {
 	memFs := memfs.New()
+
+	groupOnce := false
+	// first, generate a group.yaml
 	for _, res := range prj.Resources {
 		newRes := *res
 		token, err := aery.UniqueString(env.Name())
@@ -292,12 +301,17 @@ func generateAery(root string, prj *ProjectConfig, env *environment.Environment)
 		}
 		newRes.Location = env.GetLocation()
 
-		if newRes.Type == ResourceTypeOpenAiModel {
-			//TODO: think about what root means for in-memory vs on-disk layout
-			err := GenerateResourceDefinitions(&newRes, "", GenerateOptions{Root: root, fs: memFs, Token: token})
+		if !groupOnce {
+			err = GenerateResourceGroup(&newRes, "", GenerateOptions{Root: root, fs: memFs, Token: env.Name()})
 			if err != nil {
-				return nil, fmt.Errorf("generating resource definitions: %w", err)
+				return nil, fmt.Errorf("generating resource group: %w", err)
 			}
+		}
+
+		//TODO: think about what root means for in-memory vs on-disk layout
+		err = GenerateResourceDefinitions(&newRes, "", GenerateOptions{Root: root, fs: memFs, Token: token})
+		if err != nil {
+			return nil, fmt.Errorf("generating resource definitions: %w", err)
 		}
 	}
 

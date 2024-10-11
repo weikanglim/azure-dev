@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 
 	"cuelang.org/go/cue"
@@ -36,30 +37,92 @@ type genContext struct {
 	Tags map[string]string `json:"tags"`
 }
 
+// "type": "Microsoft.Resources/resourceGroups",
+// "apiVersion": "2022-09-01",
+// "name": "[format('rg-{0}', parameters('environmentName'))]",
+// "location": "[parameters('location')]",
+// "tags": "[variables('tags')]"
+
+func GenerateResourceGroup(resConfig *ResourceConfig, dir string, options GenerateOptions) error {
+	ctx := cuecontext.New()
+	// first determine if we're inside a group or subscription
+	if options.fs == nil {
+		options.fs = &writableFS{}
+	}
+
+	if options.Root != "" {
+		dir = filepath.Join(options.Root, dir)
+	}
+
+	if dir != "" {
+		if err := options.fs.MkdirAll(dir, osutil.PermissionDirectory); err != nil {
+			return fmt.Errorf("creating directory: %w", err)
+		}
+	}
+
+	err := generateFile(ctx, resConfig, "group.cue", filepath.Join(dir, "group.yaml"), options)
+	if err != nil {
+		return fmt.Errorf("error generating logs.yaml: %v", err)
+	}
+
+	return nil
+}
+
 // GenerateResourceDefinitions generates resource definition files from a service definition.
 func GenerateResourceDefinitions(
 	resConfig *ResourceConfig,
 	dir string, // could be resource group dir
 	options GenerateOptions) error {
 	ctx := cuecontext.New()
-	var value cue.Value
-
 	// first determine if we're inside a group or subscription
+	if options.fs == nil {
+		options.fs = &writableFS{}
+	}
+
+	if options.Root != "" {
+		dir = filepath.Join(options.Root, dir)
+	}
+
+	if dir != "" {
+		if err := options.fs.MkdirAll(dir, osutil.PermissionDirectory); err != nil {
+			return fmt.Errorf("creating directory: %w", err)
+		}
+	}
 
 	switch resConfig.Type {
 	case ResourceTypeOpenAiModel:
-		cueFile, err := resources.AeryGen.ReadFile("aery-gen/ai.cue")
+		err := generateFile(ctx, resConfig, "ai.cue", filepath.Join(dir, "ai.yaml"), options)
 		if err != nil {
-			return fmt.Errorf("error reading ai.cue: %v", err)
+			return fmt.Errorf("error generating ai.yaml: %v", err)
 		}
-
-		value = ctx.CompileBytes(cueFile)
+	case ResourceTypeHostContainerApp:
+		err := generateFile(ctx, resConfig, "logs.cue", filepath.Join(dir, "logs.yaml"), options)
+		if err != nil {
+			return fmt.Errorf("error generating logs.yaml: %v", err)
+		}
 	default:
 		return fmt.Errorf("unsupported resource type: %v", resConfig.Type)
 	}
 
+	return nil
+}
+
+func generateFile(
+	cueCtx *cue.Context,
+	input *ResourceConfig,
+	srcPath string,
+	destPath string,
+	options GenerateOptions) error {
+	root := "aery-gen"
+	cueFile, err := resources.AeryGen.ReadFile(path.Join(root, srcPath))
+	if err != nil {
+		return fmt.Errorf("error reading logs.cue: %v", err)
+	}
+
+	value := cueCtx.CompileBytes(cueFile)
+
 	// add encoding for resConfig
-	val := value.FillPath(cue.ParsePath("input"), *resConfig)
+	val := value.FillPath(cue.ParsePath("input"), *input)
 	if err := val.Err(); err != nil {
 		return fmt.Errorf("error filling input: %v", err)
 	}
@@ -80,7 +143,7 @@ func GenerateResourceDefinitions(
 
 		genCtx := genContext{}
 		genCtx.Name = name
-		genCtx.Tags = resConfig.Tags
+		genCtx.Tags = input.Tags
 		// improve: we can add more context here
 
 		// set the name
@@ -95,15 +158,6 @@ func GenerateResourceDefinitions(
 	log.Println("cue evaluation:")
 	log.Println(string(contents))
 
-	// What do I want to do:
-	// 1. Generate a single file with multiple YAML documents
-	// 2. Want the generation also be a single file
-	// 3. Want the name generation to be done in go
-
-	// Solution:
-
-	// Loop through each thing, fill the name.
-
 	// Marshal the result back to CUE syntax
 	bytes, err := yaml.MarshalStream(val.LookupPath(cue.ParsePath("output")))
 	if err != nil {
@@ -111,26 +165,8 @@ func GenerateResourceDefinitions(
 	}
 
 	fs := options.fs
-	if fs == nil {
-		fs = &writableFS{}
-	}
-
-	if options.Root != "" {
-		dir = filepath.Join(options.Root, dir)
-	}
-
-	if dir != "" {
-		if err := fs.MkdirAll(dir, osutil.PermissionDirectory); err != nil {
-			return fmt.Errorf("creating directory: %w", err)
-		}
-	}
-
-	path := "ai.yaml"
-	if dir != "" {
-		path = filepath.Join(dir, path)
-	}
-	log.Printf("aery-gen: writing: %s", path)
-	err = fs.WriteFile(path, []byte(bytes), osutil.PermissionFileOwnerOnly)
+	log.Printf("aery-gen: writing: %s", destPath)
+	err = fs.WriteFile(destPath, []byte(bytes), osutil.PermissionFileOwnerOnly)
 	if err != nil {
 		return fmt.Errorf("error writing file: %v", err)
 	}
