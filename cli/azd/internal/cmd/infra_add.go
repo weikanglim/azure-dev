@@ -895,7 +895,7 @@ func (a *AddAction) projectAsService(
 
 	// TODO:(weilim): allowed values for name
 	name, err := a.console.Prompt(ctx, input.ConsoleOptions{
-		Message:      "Enter a name for this service",
+		Message:      "Enter a name for this service:",
 		DefaultValue: name,
 	})
 	if err != nil {
