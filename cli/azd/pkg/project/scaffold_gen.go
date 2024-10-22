@@ -154,7 +154,7 @@ func infraSpec(projectConfig *ProjectConfig) (*scaffold.InfraSpec, error) {
 				Port: -1,
 			}
 
-			err := mapContainerApp(res, &svcSpec)
+			err := mapContainerApp(res, &svcSpec, &infraSpec)
 			if err != nil {
 				return nil, err
 			}
@@ -186,17 +186,36 @@ func infraSpec(projectConfig *ProjectConfig) (*scaffold.InfraSpec, error) {
 	return &infraSpec, nil
 }
 
-func mapContainerApp(res *ResourceConfig, svcSpec *scaffold.ServiceSpec) error {
+func mapContainerApp(res *ResourceConfig, svcSpec *scaffold.ServiceSpec, infraSpec *scaffold.InfraSpec) error {
 	props := res.Props.(ContainerAppProps)
 	for _, envVar := range props.Env {
+		if len(envVar.Value) == 0 && len(envVar.Secret) == 0 {
+			return fmt.Errorf(
+				"environment variable %s for host %s is invalid: both value and secret are set",
+				envVar.Name,
+				res.Name)
+		}
+
+		if len(envVar.Value) > 0 && len(envVar.Secret) > 0 {
+			return fmt.Errorf(
+				"environment variable %s for host %s is invalid: both value and secret are empty",
+				envVar.Name,
+				res.Name)
+		}
+
 		isSecret := len(envVar.Secret) > 0
 		value := envVar.Value
 		if isSecret {
-			// TODO: handle secrets
-			continue
+			value = envVar.Secret
 		}
 
-		svcSpec.Env[envVar.Name] = value
+		// Notice that we derive isSecret from it's usage.
+		// This is generally correct, except for the case where:
+		// - CONNECTION_STRING: ${DB_HOST}:${DB_SECRET}
+		// Here, DB_HOST is not a secret, but DB_SECRET is. And yet, DB_HOST will be marked as a secrete.
+		// This is a limitation of the current implementation, but it's safer to mark both as a secret above.
+		evaluatedValue := evalEnvSubt(value, isSecret, infraSpec)
+		svcSpec.Env[envVar.Name] = evaluatedValue
 	}
 
 	port := props.Port
@@ -238,4 +257,71 @@ func mapHostUses(
 	}
 
 	return nil
+}
+
+func setParameter(spec *scaffold.InfraSpec, name string, value string, isSecret bool) {
+	for _, parameters := range spec.Parameters {
+		if parameters.Name == name { // handle existing parameter
+			if isSecret && !parameters.Secret {
+				// escalate the parameter to a secret
+				parameters.Secret = true
+			}
+
+			// prevent auto-generated parameters from being overwritten with different values
+			if valStr, ok := parameters.Value.(string); !ok || ok && valStr != value {
+				// if you are a maintainer and run into this error, consider using a different, unique name
+				panic(fmt.Sprintf(
+					"parameter collision: parameter %s already set to %s, cannot set to %s", name, parameters.Value, value))
+			}
+
+			return
+		}
+	}
+
+	spec.Parameters = append(spec.Parameters, scaffold.Parameter{
+		Name:   name,
+		Value:  value,
+		Type:   "string",
+		Secret: isSecret,
+	})
+}
+
+// evalEnvSubt evaluates a value that may contain multiple envsubst expressions, returning the evaluated value.
+//
+// The value may contain multiple expressions, e.g.:
+//   - "Hello, ${world:=okay}!"
+//   - "${CAT} and ${DOG}"
+//   - "${DB_HOST:='local'}:${DB_USERNAME:='okay'}"
+//
+// Each expression is evaluated and replaced with a reference to a parameter in the infra spec.
+// generateAsSecret is used to determine if the parameter generated should be marked as a secret.
+func evalEnvSubt(value string, generateAsSecret bool, infraSpec *scaffold.InfraSpec) string {
+	names, locations := parseEnvSubtVariables(value)
+	for i, name := range names {
+		expression := value[locations[i].start : locations[i].stop+1]
+		setParameter(infraSpec, scaffold.BicepName(name), expression, generateAsSecret)
+	}
+
+	var evaluatedValue string
+	if len(names) == 0 { // literal string
+		evaluatedValue = "'" + value + "'"
+	} else if len(names) == 1 {
+		// reference the variable that describes it
+		evaluatedValue = scaffold.BicepName(names[0])
+	} else {
+		previous := 0
+		// construct the evaluated value
+		evaluatedValue = "'"
+		for i, loc := range locations {
+			// replace each expression with references by variable name
+			evaluatedValue += value[previous:loc.start]
+			evaluatedValue += "${"
+			evaluatedValue += scaffold.BicepName(names[i])
+			evaluatedValue += "}"
+			previous = loc.stop + 1
+		}
+		evaluatedValue += "'"
+	}
+
+	return evaluatedValue
 }
