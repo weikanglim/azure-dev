@@ -13,13 +13,13 @@ type location struct {
 	stop  int
 }
 
-// parseEnvSubtVariables parses the envsubt expression(s) present in a string.
+// parseEnvSubstVariables parses the envsubst expression(s) present in a string.
 // substitutions, returning the locations of the expressions and the names of the variables.
 //
 // It works with both:
 //   - ${var} and
 //   - ${var:=default} syntaxes
-func parseEnvSubtVariables(s string) (names []string, expressions []location) {
+func parseEnvSubstVariables(s string) (names []string, expressions []location) {
 	inVar := false
 	inVarName := false
 	name := strings.Builder{}

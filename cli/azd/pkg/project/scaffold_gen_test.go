@@ -42,7 +42,7 @@ func Test_evalEnvValue(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.value, func(t *testing.T) {
 			spec := &scaffold.InfraSpec{}
-			evaluated := evalEnvSubt(tt.value, tt.valueIsSecret, spec)
+			evaluated := evalEnvSubst(tt.value, tt.valueIsSecret, spec)
 			if tt.want != evaluated {
 				t.Errorf("evalEnvValue() evaluatedValue = %v, want %v", evaluated, tt.want)
 			}

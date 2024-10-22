@@ -214,7 +214,7 @@ func mapContainerApp(res *ResourceConfig, svcSpec *scaffold.ServiceSpec, infraSp
 		// - CONNECTION_STRING: ${DB_HOST}:${DB_SECRET}
 		// Here, DB_HOST is not a secret, but DB_SECRET is. And yet, DB_HOST will be marked as a secrete.
 		// This is a limitation of the current implementation, but it's safer to mark both as a secret above.
-		evaluatedValue := evalEnvSubt(value, isSecret, infraSpec)
+		evaluatedValue := evalEnvSubst(value, isSecret, infraSpec)
 		svcSpec.Env[envVar.Name] = evaluatedValue
 	}
 
@@ -286,7 +286,7 @@ func setParameter(spec *scaffold.InfraSpec, name string, value string, isSecret 
 	})
 }
 
-// evalEnvSubt evaluates a value that may contain multiple envsubst expressions, returning the evaluated value.
+// evalEnvSubst evaluates a value that may contain multiple envsubst expressions, returning the evaluated value.
 //
 // The value may contain multiple expressions, e.g.:
 //   - "Hello, ${world:=okay}!"
@@ -295,8 +295,8 @@ func setParameter(spec *scaffold.InfraSpec, name string, value string, isSecret 
 //
 // Each expression is evaluated and replaced with a reference to a parameter in the infra spec.
 // generateAsSecret is used to determine if the parameter generated should be marked as a secret.
-func evalEnvSubt(value string, generateAsSecret bool, infraSpec *scaffold.InfraSpec) string {
-	names, locations := parseEnvSubtVariables(value)
+func evalEnvSubst(value string, generateAsSecret bool, infraSpec *scaffold.InfraSpec) string {
+	names, locations := parseEnvSubstVariables(value)
 	for i, name := range names {
 		expression := value[locations[i].start : locations[i].stop+1]
 		setParameter(infraSpec, scaffold.BicepName(name), expression, generateAsSecret)
