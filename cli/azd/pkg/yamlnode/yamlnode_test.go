@@ -189,6 +189,50 @@ func TestAppend(t *testing.T) {
 	}
 }
 
+func TestSetFromEmpty(t *testing.T) {
+	tests := []struct {
+		name    string
+		path    string
+		value   interface{}
+		wantErr bool
+	}{
+		{"root", "spring?.datasource?.url", "new_value", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{
+				{
+					Kind:    yaml.MappingNode,
+					Content: []*yaml.Node{},
+				},
+			}}
+			valueNode, err := Encode(tt.value)
+			if err != nil {
+				t.Fatalf("Failed to encode value: %v", err)
+			}
+
+			err = Set(&root, tt.path, valueNode)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				// Verify the set value
+				node, err := Find(&root, tt.path)
+				if err != nil {
+					t.Errorf("Failed to get set value: %v", err)
+					return
+				}
+
+				assertNodeEquals(t, "Set()", node, tt.value)
+			}
+		})
+	}
+}
+
 func assertNodeEquals(t *testing.T, funcName string, node *yaml.Node, expected interface{}) {
 	t.Helper()
 	wantStr, err := yaml.Marshal(expected)

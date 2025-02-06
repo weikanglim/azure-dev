@@ -146,6 +146,22 @@ func Append(root *yaml.Node, path string, node *yaml.Node) error {
 		return fmt.Errorf("%w: %s", ErrNodeNotFound, path)
 	}
 
+	switch found.Kind {
+	case yaml.MappingNode:
+		if node.Kind != yaml.MappingNode {
+			return fmt.Errorf("append a non-mapping node to a mapping node: %w", ErrNodeWrongKind)
+		}
+
+		if len(node.Content)%2 != 0 {
+			return fmt.Errorf("mapping node must have an even number of content")
+		}
+
+		for i := 0; i < len(node.Content); i += 2 {
+			found.Content = append(found.Content, node.Content[i])
+			found.Content = append(found.Content, node.Content[i+1])
+		}
+	}
+
 	if found.Kind != yaml.SequenceNode {
 		return fmt.Errorf("append to a non-sequence node: %w", ErrNodeWrongKind)
 	}

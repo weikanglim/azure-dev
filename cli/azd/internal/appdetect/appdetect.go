@@ -150,6 +150,9 @@ type Project struct {
 
 	// If true, the project uses Docker for packaging. This is inferred through the presence of a Dockerfile.
 	Docker *Docker
+
+	// The raw project information.
+	RawProject any
 }
 
 func (p *Project) HasWebUIFramework() bool {

@@ -15,6 +15,7 @@ import (
 
 	"github.com/azure/azure-dev/cli/azd/internal"
 	"github.com/azure/azure-dev/cli/azd/internal/appdetect"
+	"github.com/azure/azure-dev/cli/azd/internal/appgen"
 	"github.com/azure/azure-dev/cli/azd/internal/cmd/add"
 	"github.com/azure/azure-dev/cli/azd/internal/scaffold"
 	"github.com/azure/azure-dev/cli/azd/internal/tracing"
@@ -283,6 +284,29 @@ func (i *Initializer) InitFromApp(
 		err = scaffold.Execute(t, "next-steps-alpha.md", nil, filepath.Join(azdCtx.ProjectDirectory(), "next-steps.md"))
 		if err != nil {
 			return err
+		}
+
+		for _, prj := range detect.Services {
+			if prj.Language == appdetect.Java && prj.RawProject != nil {
+				if maven, ok := prj.RawProject.(appdetect.MavenProject); ok {
+					if !maven.IsSpringBoot {
+						continue
+					}
+
+					propertiesFile, err := filepath.Rel(azdCtx.ProjectDirectory(), appgen.PropertiesFile(maven))
+					if err != nil {
+						return err
+					}
+					i.console.MessageUxItem(ctx, &ux.DoneMessage{
+						Message: "Generating " + output.WithHighLightFormat("./"+propertiesFile),
+					})
+
+					err = appgen.GenerateSpringAppProperties(ctx, maven)
+					if err != nil {
+						return fmt.Errorf("generating bindings: %w", err)
+					}
+				}
+			}
 		}
 
 		i.console.MessageUxItem(ctx, &ux.DoneMessage{

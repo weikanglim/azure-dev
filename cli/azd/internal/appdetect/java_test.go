@@ -31,7 +31,7 @@ func TestToMavenProject(t *testing.T) {
 	tests := []struct {
 		name     string
 		testPoms []testPom
-		expected []dependency
+		expected []MavenDependency
 	}{
 		{
 			name: "Test with two dependencies",
@@ -62,7 +62,7 @@ func TestToMavenProject(t *testing.T) {
 						`,
 				},
 			},
-			expected: []dependency{
+			expected: []MavenDependency{
 				{
 					GroupId:    "org.springframework",
 					ArtifactId: "spring-core",
@@ -94,7 +94,7 @@ func TestToMavenProject(t *testing.T) {
 						`,
 				},
 			},
-			expected: []dependency{},
+			expected: []MavenDependency{},
 		},
 		{
 			name: "Test with one dependency which version is decided by dependencyManagement",
@@ -128,7 +128,7 @@ func TestToMavenProject(t *testing.T) {
 						`,
 				},
 			},
-			expected: []dependency{
+			expected: []MavenDependency{
 				{
 					GroupId:    "org.slf4j",
 					ArtifactId: "slf4j-api",
@@ -164,7 +164,7 @@ func TestToMavenProject(t *testing.T) {
 						`,
 				},
 			},
-			expected: []dependency{
+			expected: []MavenDependency{
 				{
 					GroupId:    "org.slf4j",
 					ArtifactId: "slf4j-api",
@@ -252,7 +252,7 @@ func TestToMavenProject(t *testing.T) {
 						`,
 				},
 			},
-			expected: []dependency{},
+			expected: []MavenDependency{},
 		},
 	}
 
