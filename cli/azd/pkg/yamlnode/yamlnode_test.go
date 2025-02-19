@@ -87,6 +87,7 @@ func TestSet(t *testing.T) {
 		{"Create array", "root.new_array", []string{"first_item"}, false},
 		{"Create object", "root.nested.new_object", map[string]string{"key": "value"}, false},
 		{"Create nested array object", "root.mixedArray[1].nestedObj.newKey", "new_deep_value", false},
+		{"Create layers", "root.new?.new2?.new3", "new_deep_value", false},
 		{"Create missing key", "root.nonexistent?.key", "value", false},
 
 		{"Invalid path", "root.nonexistent.key", "value", true},
@@ -141,6 +142,7 @@ func TestAppend(t *testing.T) {
 		{"Append object to mixed array", "root.mixedArray", map[string]string{"key": "value"}, false, 4},
 		{"Append to nested array", "root.mixedArray[2].nestedArr", "item3", false, 3},
 		{"Append to non-existent array", "root.nonexistent[]?", "item1", false, 1},
+		{"Append layers", "root.new?.new2?.arr[]?", "item1", false, 1},
 		{"Invalid path (not an array)", "root.nested.key", "invalid", true, 0},
 		{"Non-existent path", "root.nonexistent", "value", true, 0},
 		{"Invalid path format", "root.array.[1]", "invalid", true, 0},
@@ -184,50 +186,6 @@ func TestAppend(t *testing.T) {
 				// we verify the last node matches the appended value
 				lastNode := node.Content[len(node.Content)-1]
 				assertNodeEquals(t, "Append()", lastNode, tt.value)
-			}
-		})
-	}
-}
-
-func TestSetFromEmpty(t *testing.T) {
-	tests := []struct {
-		name    string
-		path    string
-		value   interface{}
-		wantErr bool
-	}{
-		{"root", "spring?.datasource?.url", "new_value", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			root := yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{
-				{
-					Kind:    yaml.MappingNode,
-					Content: []*yaml.Node{},
-				},
-			}}
-			valueNode, err := Encode(tt.value)
-			if err != nil {
-				t.Fatalf("Failed to encode value: %v", err)
-			}
-
-			err = Set(&root, tt.path, valueNode)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr {
-				// Verify the set value
-				node, err := Find(&root, tt.path)
-				if err != nil {
-					t.Errorf("Failed to get set value: %v", err)
-					return
-				}
-
-				assertNodeEquals(t, "Set()", node, tt.value)
 			}
 		})
 	}
