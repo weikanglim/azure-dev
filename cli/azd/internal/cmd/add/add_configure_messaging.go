@@ -5,8 +5,9 @@ package add
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
+	"github.com/azure/azure-dev/cli/azd/internal/names"
 	"github.com/azure/azure-dev/cli/azd/pkg/input"
 	"github.com/azure/azure-dev/cli/azd/pkg/project"
 )
@@ -16,28 +17,32 @@ func fillEventHubs(
 	r *project.ResourceConfig,
 	console input.Console,
 	p PromptOptions) (*project.ResourceConfig, error) {
-	if r.Name == "" {
-		r.Name = "event-hubs"
+	r.Name = "event-hubs"
+
+	if _, exists := p.PrjConfig.Resources["event-hubs"]; exists {
+		return nil, fmt.Errorf("only one event hubs resource is allowed at this time")
 	}
 
-	if err := validateResourceName(r.Name, p.PrjConfig); err != nil {
-		return r, errors.New("only one event hubs resource is currently allowed")
-	}
+	for {
+		topicName, err := console.Prompt(ctx, input.ConsoleOptions{
+			Message: "Input the event hub name:",
+			Help: "Event hub name\n\n" +
+				"Name of the event hub that the app connects to. " +
+				"Also known as a Kafka topic.",
+		})
+		if err != nil {
+			return r, err
+		}
 
-	topicName, err := console.Prompt(ctx, input.ConsoleOptions{
-		Message: "Input the event hub name",
-		Help: "Event hub name\n\n" +
-			"Name of the event hub that the app connects to. " +
-			"Also known as a Kafka topic.",
-	})
-	if err != nil {
-		return r, err
-	}
+		if err := names.ValidateLabelName(topicName); err != nil {
+			console.Message(ctx, err.Error())
+			continue
+		}
 
-	// TODO: validate queue name
-
-	r.Props = project.EventHubsProps{
-		Hubs: []string{topicName},
+		r.Props = project.EventHubsProps{
+			Hubs: []string{topicName},
+		}
+		break
 	}
 
 	return r, nil
@@ -48,27 +53,31 @@ func fillServiceBus(
 	r *project.ResourceConfig,
 	console input.Console,
 	p PromptOptions) (*project.ResourceConfig, error) {
-	if r.Name == "" {
-		r.Name = "service-bus"
+	r.Name = "service-bus"
+
+	if _, exists := p.PrjConfig.Resources["service-bus"]; exists {
+		return nil, fmt.Errorf("only one service bus resource is allowed at this time")
 	}
 
-	if err := validateResourceName(r.Name, p.PrjConfig); err != nil {
-		return r, errors.New("only one service bus resource is currently allowed")
-	}
+	for {
+		queueName, err := console.Prompt(ctx, input.ConsoleOptions{
+			Message: "Input the queue name:",
+			Help: "Service Bus queue name\n\n" +
+				"Name of the queue that the app connects to. ",
+		})
+		if err != nil {
+			return r, err
+		}
 
-	queueName, err := console.Prompt(ctx, input.ConsoleOptions{
-		Message: "Input the queue name",
-		Help: "Service Bus queue name\n\n" +
-			"Name of the queue that the app connects to. ",
-	})
-	if err != nil {
-		return r, err
-	}
+		if err := names.ValidateLabelName(queueName); err != nil {
+			console.Message(ctx, err.Error())
+			continue
+		}
 
-	//TODO: validate queue name
-
-	r.Props = project.ServiceBusProps{
-		Queues: []string{queueName},
+		r.Props = project.ServiceBusProps{
+			Queues: []string{queueName},
+		}
+		break
 	}
 
 	return r, nil

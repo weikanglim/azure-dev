@@ -57,6 +57,16 @@ func Metadata(r *project.ResourceConfig) resourceMeta {
 			"POSTGRES_PORT",
 			"POSTGRES_URL",
 		}
+	case project.ResourceTypeDbMySql:
+		res.AzureResourceType = "Microsoft.DBforMySQL/flexibleServers/databases"
+		res.UseEnvVars = []string{
+			"MYSQL_HOST",
+			"MYSQL_USERNAME",
+			"MYSQL_DATABASE",
+			"MYSQL_PASSWORD",
+			"MYSQL_PORT",
+			"MYSQL_URL",
+		}
 	case project.ResourceTypeDbMongo:
 		res.AzureResourceType = "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases"
 		res.UseEnvVars = []string{
@@ -79,6 +89,12 @@ func Metadata(r *project.ResourceConfig) resourceMeta {
 			"AZURE_SERVICE_BUS_HOST",
 			"AZURE_SERVICE_BUS_NAME",
 		}
+	case project.ResourceTypeStorage:
+		res.AzureResourceType = "Microsoft.Storage/storageAccounts"
+		res.UseEnvVars = []string{
+			"AZURE_STORAGE_ACCOUNT_NAME",
+			"AZURE_STORAGE_BLOB_ENDPOINT",
+		}
 	}
 	return res
 }
@@ -90,7 +106,8 @@ func (a *AddAction) previewProvision(
 	usedBy []string,
 ) error {
 	a.console.ShowSpinner(ctx, "Previewing changes....", input.Step)
-	err := provisioning.EnsureSubscriptionAndLocation(ctx, a.envManager, a.env, a.prompter, nil)
+	err := provisioning.EnsureSubscriptionAndLocation(
+		ctx, a.envManager, a.env, a.prompter, provisioning.EnsureSubscriptionAndLocationOptions{})
 	if err != nil {
 		return err
 	}

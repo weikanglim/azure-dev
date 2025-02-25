@@ -146,7 +146,10 @@ func infraSpec(projectConfig *ProjectConfig) (*scaffold.InfraSpec, error) {
 		case ResourceTypeDbPostgres:
 			infraSpec.DbPostgres = &scaffold.DatabasePostgres{
 				DatabaseName: res.Name,
-				DatabaseUser: "pgadmin",
+			}
+		case ResourceTypeDbMySql:
+			infraSpec.DbMySql = &scaffold.DatabaseMysql{
+				DatabaseName: res.Name,
 			}
 		case ResourceTypeHostContainerApp:
 			svcSpec := scaffold.ServiceSpec{
@@ -199,6 +202,14 @@ func infraSpec(projectConfig *ProjectConfig) (*scaffold.InfraSpec, error) {
 			infraSpec.ServiceBus = &scaffold.ServiceBus{
 				Queues: props.Queues,
 				Topics: props.Topics,
+			}
+		case ResourceTypeStorage:
+			if infraSpec.StorageAccount != nil {
+				return nil, fmt.Errorf("only one storage account resource is currently allowed")
+			}
+			props := res.Props.(StorageProps)
+			infraSpec.StorageAccount = &scaffold.StorageAccount{
+				Containers: props.Containers,
 			}
 		}
 	}
@@ -279,6 +290,8 @@ func mapHostUses(
 			svcSpec.DbCosmosMongo = &scaffold.DatabaseReference{DatabaseName: useRes.Name}
 		case ResourceTypeDbPostgres:
 			svcSpec.DbPostgres = &scaffold.DatabaseReference{DatabaseName: useRes.Name}
+		case ResourceTypeDbMySql:
+			svcSpec.DbMySql = &scaffold.DatabaseReference{DatabaseName: useRes.Name}
 		case ResourceTypeDbRedis:
 			svcSpec.DbRedis = &scaffold.DatabaseReference{DatabaseName: useRes.Name}
 		case ResourceTypeHostContainerApp:
@@ -295,6 +308,8 @@ func mapHostUses(
 			svcSpec.EventHubs = &scaffold.EventHubs{}
 		case ResourceTypeMessagingServiceBus:
 			svcSpec.ServiceBus = &scaffold.ServiceBus{}
+		case ResourceTypeStorage:
+			svcSpec.StorageAccount = &scaffold.StorageReference{}
 		}
 	}
 

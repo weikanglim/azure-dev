@@ -366,12 +366,14 @@
                         "description": "The type of resource to be created. (Example: db.postgres)",
                         "enum": [
                             "db.postgres",
+                            "db.mysql",
                             "db.redis",
                             "db.mongo",
                             "ai.openai.model",
                             "host.containerapp",
                             "messaging.eventhubs",
-                            "messaging.servicebus"
+                            "messaging.servicebus",
+                            "storage"
                         ]
                     },
                     "uses": {
@@ -387,10 +389,12 @@
                     { "if": { "properties": { "type": { "const": "host.containerapp" }}}, "then": { "$ref": "#/definitions/containerAppResource" } },
                     { "if": { "properties": { "type": { "const": "ai.openai.model" }}}, "then": { "$ref": "#/definitions/aiModelResource" } },
                     { "if": { "properties": { "type": { "const": "db.postgres"  }}}, "then": { "$ref": "#/definitions/resource"} },
+                    { "if": { "properties": { "type": { "const": "db.mysql"  }}}, "then": { "$ref": "#/definitions/resource"} },
                     { "if": { "properties": { "type": { "const": "db.redis"  }}}, "then": { "$ref": "#/definitions/resource"} },
                     { "if": { "properties": { "type": { "const": "db.mongo"  }}}, "then": { "$ref": "#/definitions/resource"} },
                     { "if": { "properties": { "type": { "const": "messaging.eventhubs" }}}, "then": { "$ref": "#/definitions/eventHubsResource" } },
-                    { "if": { "properties": { "type": { "const": "messaging.servicebus" }}}, "then": { "$ref": "#/definitions/serviceBusResource" } }
+                    { "if": { "properties": { "type": { "const": "messaging.servicebus" }}}, "then": { "$ref": "#/definitions/serviceBusResource" } },
+                    { "if": { "properties": { "type": { "const": "storage"  }}}, "then": { "$ref": "#/definitions/storageAccountResource"} }
                 ]
             }
         },
@@ -500,6 +504,7 @@
         "requiredVersions": {
             "type": "object",
             "additionalProperties": false,
+            "description": "Optional. Provides additional configuration for required versions of `azd` and extensions.",
             "properties": {
                 "azd": {
                     "type": "string",
@@ -508,6 +513,21 @@
                     "examples": [
                         ">= 0.6.0-beta.3"
                     ]
+                },
+                "extensions": {
+                    "type": "object",
+                    "title": "A map of required extensions and version constraints for this project.",
+                    "description": "A map of required extensions and version constraints for this project. Supports semver constraints. If version is omitted the latest version will be installed.",
+                    "additionalProperties": {
+                        "type": "string",
+                        "examples": [
+                            "latest",
+                            ">=1.0.0",
+                            "~2.0.0",
+                            "=3.1.2",
+                            ">= 1.0.0 < 2.0.0"
+                        ]
+                    }
                 }
             }
         },
@@ -1213,6 +1233,7 @@
                     "enum": [
                         "db.postgres",
                         "db.redis",
+                        "db.mysql",
                         "db.mongo",
                         "host.containerapp",
                         "ai.openai.model"
@@ -1323,14 +1344,14 @@
         },
         "serviceBusResource": {
             "type": "object",
-            "description": "An Azure Service Hub namespace.",
+            "description": "An Azure Service Bus namespace.",
             "additionalProperties": false,
             "properties": {
                 "type": true,
                 "uses": true,
                 "queues": {
                     "type": "array",
-                    "title": "Queues to create in the Service Hub namespace",
+                    "title": "Queues to create in the Service Bus namespace",
                     "additionalProperties": false,
                     "items": {
                         "type": "string"
@@ -1339,12 +1360,31 @@
                 },
                 "topics": {
                     "type": "array",
-                    "title": "Topics to create in the Service Hub namespace",
+                    "title": "Topics to create in the Service Bus namespace",
                     "additionalProperties": false,
                     "items": {
                         "type": "string"
                     },
                     "uniqueItems": true
+                }
+            }
+        },
+        "storageAccountResource": {
+            "type": "object",
+            "description": "A deployed, ready-to-use Azure Storage Account.",
+            "additionalProperties": false,
+            "properties": {
+                "type": true,
+                "uses": true,
+                "containers": {
+                    "type": "array",
+                    "title": "Azure Storage Account container names.",
+                    "description": "The container names of Azure Storage Account.",
+                    "items": {
+                        "type": "string",
+                        "title": "Azure Storage Account container name",
+                        "description": "The container name of Azure Storage Account."
+                    }
                 }
             }
         }

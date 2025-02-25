@@ -128,6 +128,7 @@ type genOutputParameter struct {
 type genBicepModules struct {
 	Path   string
 	Params map[string]string
+	Scope  string
 }
 
 type genBicepTemplateContext struct {
@@ -152,6 +153,7 @@ type genBicepTemplateContext struct {
 
 type genContainerAppManifestTemplateContext struct {
 	Name            string
+	Entrypoint      string
 	Ingress         *genContainerAppIngress
 	Env             map[string]string
 	Secrets         map[string]string

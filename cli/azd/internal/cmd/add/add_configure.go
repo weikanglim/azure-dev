@@ -42,6 +42,7 @@ func Configure(
 	case project.ResourceTypeOpenAiModel:
 		return fillAiModelName(ctx, r, console, p)
 	case project.ResourceTypeDbPostgres,
+		project.ResourceTypeDbMySql,
 		project.ResourceTypeDbMongo:
 		return fillDatabaseName(ctx, r, console, p)
 	case project.ResourceTypeMessagingEventHubs:
@@ -55,6 +56,8 @@ func Configure(
 
 		r.Name = "redis"
 		return r, nil
+	case project.ResourceTypeStorage:
+		return fillStorageDetails(ctx, r, console, p)
 	default:
 		return r, nil
 	}

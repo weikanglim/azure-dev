@@ -120,6 +120,7 @@ gosec
 goterm
 gotest
 gotestsum
+grpcserver
 hotspot
 ignorefile
 iidfile
@@ -147,6 +148,7 @@ mongojs
 mvnw
 mysqlclient
 mysqldb
+mysqladmin
 nobanner
 nodeapp
 nolint

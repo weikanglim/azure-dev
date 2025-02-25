@@ -86,12 +86,16 @@ func TestExecInfra(t *testing.T) {
 				DbPostgres: &DatabasePostgres{
 					DatabaseName: "appdb",
 				},
+				DbMySql: &DatabaseMysql{
+					DatabaseName: "mysqldb",
+				},
 				DbCosmosMongo: &DatabaseCosmosMongo{
 					DatabaseName: "appdb",
 				},
-				DbRedis:    &DatabaseRedis{},
-				ServiceBus: &ServiceBus{},
-				EventHubs:  &EventHubs{},
+				DbRedis:        &DatabaseRedis{},
+				ServiceBus:     &ServiceBus{},
+				EventHubs:      &EventHubs{},
+				StorageAccount: &StorageAccount{},
 				Services: []ServiceSpec{
 					{
 						Name: "api",
@@ -112,8 +116,12 @@ func TestExecInfra(t *testing.T) {
 						DbPostgres: &DatabaseReference{
 							DatabaseName: "appdb",
 						},
-						ServiceBus: &ServiceBus{},
-						EventHubs:  &EventHubs{},
+						DbMySql: &DatabaseReference{
+							DatabaseName: "mysqldb",
+						},
+						ServiceBus:     &ServiceBus{},
+						EventHubs:      &EventHubs{},
+						StorageAccount: &StorageReference{},
 					},
 					{
 						Name: "web",
@@ -134,13 +142,29 @@ func TestExecInfra(t *testing.T) {
 			InfraSpec{
 				DbPostgres: &DatabasePostgres{
 					DatabaseName: "appdb",
-					DatabaseUser: "appuser",
 				},
 				Services: []ServiceSpec{
 					{
 						Name: "api",
 						Port: 3100,
 						DbPostgres: &DatabaseReference{
+							DatabaseName: "appdb",
+						},
+					},
+				},
+			},
+		},
+		{
+			"API with MySQL",
+			InfraSpec{
+				DbMySql: &DatabaseMysql{
+					DatabaseName: "appdb",
+				},
+				Services: []ServiceSpec{
+					{
+						Name: "api",
+						Port: 3100,
+						DbMySql: &DatabaseReference{
 							DatabaseName: "appdb",
 						},
 					},
