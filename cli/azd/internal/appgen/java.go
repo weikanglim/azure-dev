@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -76,7 +75,6 @@ func GenerateSpringAppProperties(
 				"spring?.datasource?.password": "${POSTGRES_PASSWORD}",
 			}
 			for key, value := range properties {
-				log.Println("Setting", key, value)
 				err = yamlnode.Set(&doc, key, &yaml.Node{Kind: yaml.ScalarNode, Value: value})
 				if err != nil {
 					return fmt.Errorf("setting '%s': %w", key, err)

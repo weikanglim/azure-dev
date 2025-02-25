@@ -259,7 +259,7 @@ func TestToMavenProject(t *testing.T) {
 						`,
 				},
 			},
-			expected: []dependency{},
+			expected: []MavenDependency{},
 		},
 		{
 			name: "Test pom with multi modules: root pom build last when run help:effective-pom",
