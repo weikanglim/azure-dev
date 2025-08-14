@@ -85,9 +85,15 @@ WrappedAuthResult *wrapAuthResult(const AuthResult *ar)
     return wrapped;
 }
 
-WrappedAuthResult *Authenticate(const char *authority, const char *scope, const char *accountID, bool allowPrompt)
+WrappedAuthResult *Authenticate(const char *authority, const char *scope, const char *claims, const char *accountID, bool allowPrompt)
 {
-    auto authParams = AuthParameters::CreateForBearer(authority, scope);
+    auto authParams = AuthParameters::CreateForBearer(
+        authority,
+        scope,
+        "", // accessTokenToRenew
+        claims,
+        {} // additionalParameters
+        );
     auto telemetryParams = TelemetryParameters(UUID::Generate());
 
     std::promise<AuthResult> promise;
