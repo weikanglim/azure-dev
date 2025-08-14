@@ -748,19 +748,37 @@ func (m *Manager) LoginWithBrokerAccount() error {
 }
 
 // LoginWithOneAuth starts OneAuth's interactive login flow.
-func (m *Manager) LoginWithOneAuth(ctx context.Context, tenantID string, scopes []string) error {
+func (m *Manager) LoginWithOneAuth(ctx context.Context, tenantID string, scopes []string, claims string) error {
 	if len(scopes) == 0 {
 		scopes = m.LoginScopes()
 	}
-	authority := m.cloud.Configuration.ActiveDirectoryAuthorityHost + tenantID
-	accountID, err := oneauth.LogIn(authority, azdClientID, strings.Join(scopes, " "))
-	if err == nil {
-		err = m.saveUserProperties(&userProperties{
-			FromOneAuth:   true,
-			HomeAccountID: &accountID,
-		})
+
+	var claimsFile string
+	if claims == "" {
+		c, path, err := loadClaims()
+		if err != nil {
+			return err
+		}
+
+		claims = c
+		claimsFile = path
 	}
-	return err
+
+	authority := m.cloud.Configuration.ActiveDirectoryAuthorityHost + tenantID
+	accountID, err := oneauth.LogIn(authority, azdClientID, strings.Join(scopes, " "), claims)
+	if err != nil {
+		return err
+	}
+
+	if err = m.saveUserProperties(&userProperties{FromOneAuth: true, HomeAccountID: &accountID}); err != nil {
+		return err
+	}
+
+	if claimsFile != "" {
+		_ = os.Remove(claimsFile)
+	}
+
+	return nil
 }
 
 func (m *Manager) LoginWithDeviceCode(

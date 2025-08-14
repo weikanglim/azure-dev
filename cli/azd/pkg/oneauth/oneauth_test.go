@@ -12,7 +12,7 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	_, err := LogIn("authority", "clientID", "scope")
+	_, err := LogIn("authority", "clientID", "scope", "claims")
 	require.ErrorIs(t, err, errNotSupported)
 }
 

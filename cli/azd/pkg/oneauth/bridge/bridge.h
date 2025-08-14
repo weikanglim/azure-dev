@@ -38,11 +38,12 @@ extern "C"
     // The parameters are:
     // - authority: authority for token requests e.g. "https://login.microsoftonline.com/tenant"
     // - scope: scope of the desired access token
+    // - claims: optional claims to include in the token request
     // - accountID: optional account ID of a user to authenticate, as returned by a previous call to this function. Required for silent
     //              authentication. If empty or no account associated with azd matches the given value, this function will fall back to
     //              interactive authentication, provided allowPrompt is true.
     // - allowPrompt: whether to display an interactive login window when necessary
-    __declspec(dllexport) WrappedAuthResult *Authenticate(const char *authority, const char *scope, const char *accountID, bool allowPrompt);
+    __declspec(dllexport) WrappedAuthResult *Authenticate(const char *authority, const char *scope, const char *claims, const char *accountID, bool allowPrompt);
 
     // SignInSilently authenticates an account inferred from the OS e.g. the active Windows user, without displaying UI.
     // It returns an error when that's impossible.

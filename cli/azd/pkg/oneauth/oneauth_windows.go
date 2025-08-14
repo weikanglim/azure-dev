@@ -113,15 +113,15 @@ func NewCredential(authority, clientID string, opts CredentialOptions) (azcore.T
 // GetToken acquires a token from OneAuth. If doing so requires user interaction and NoPrompt is true, it returns
 // an error. Otherwise, OneAuth will display a login window and this call must occur on the main thread.
 func (c *credential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	ar, err := authn(c.authority, c.clientID, c.homeAccountID, strings.Join(opts.Scopes, " "), c.opts.NoPrompt)
+	ar, err := authn(c.authority, c.clientID, c.homeAccountID, strings.Join(opts.Scopes, " "), opts.Claims, c.opts.NoPrompt)
 	if err == nil {
 		c.homeAccountID = ar.homeAccountID
 	}
 	return ar.token, err
 }
 
-func LogIn(authority, clientID, scope string) (string, error) {
-	ar, err := authn(authority, clientID, "", scope, false)
+func LogIn(authority, clientID, scope string, claims string) (string, error) {
+	ar, err := authn(authority, clientID, "", scope, claims, false)
 	return ar.homeAccountID, err
 }
 
@@ -182,7 +182,7 @@ func start(clientID string) error {
 	return nil
 }
 
-func authn(authority, clientID, homeAccountID, scope string, noPrompt bool) (authResult, error) {
+func authn(authority, clientID, homeAccountID, scope string, claims string, noPrompt bool) (authResult, error) {
 	res := authResult{}
 	if err := start(clientID); err != nil {
 		return res, err
@@ -195,11 +195,13 @@ func authn(authority, clientID, homeAccountID, scope string, noPrompt bool) (aut
 	scope = strings.ReplaceAll(scope, "/.default", "")
 	scp := unsafe.Pointer(C.CString(scope))
 	defer C.free(scp)
+	claimsP := unsafe.Pointer(C.CString(claims))
+	defer C.free(claimsP)
 	allowPrompt := 1
 	if noPrompt {
 		allowPrompt = 0
 	}
-	p, _, _ := authenticate.Call(uintptr(a), uintptr(scp), uintptr(accountID), uintptr(allowPrompt))
+	p, _, _ := authenticate.Call(uintptr(a), uintptr(scp), uintptr(accountID), uintptr(claimsP), uintptr(allowPrompt))
 	if p == 0 {
 		// this shouldn't happen but if it did, this vague error would be better than a panic
 		return res, fmt.Errorf("authentication failed")
