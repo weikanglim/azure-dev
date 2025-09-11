@@ -50,13 +50,13 @@
                 },
                 "path": {
                     "type": "string",
-                    "title": "Path to the location that contains Azure provisioning templates",
-                    "description": "Optional. The relative folder path to the Azure provisioning templates for the specified provider. (Default: infra)"
+                    "title": "Path to the root infra folder",
+                    "description": "Optional. The path to the root infra folder. (Default: infra)"
                 },
                 "module": {
                     "type": "string",
-                    "title": "Name of the default module within the Azure provisioning templates",
-                    "description": "Optional. The name of the Azure provisioning module used when provisioning resources. (Default: main)"
+                    "title": "Module name within the folder",
+                    "description": "Optional. The module name within the folder to be used for provisioning. (Default: main)"
                 },
                 "deploymentStacks": {
                     "$ref": "#/definitions/deploymentStacksConfig"
@@ -72,8 +72,7 @@
                         "title": "A provisioning layer.",
                         "additionalProperties": false,
                         "required": [
-                            "name",
-                            "path"
+                            "name"
                         ],
                         "properties": {
                             "name": {
@@ -83,13 +82,13 @@
                             },
                             "path": {
                                 "type": "string",
-                                "title": "Path to the location that contains Azure provisioning templates",
-                                "description": "The relative folder path to the Azure provisioning templates for the specified provider."
+                                "title": "Path to the folder relative to the root infra folder",
+                                "description": "If omitted, the CLI will assume the path is the same as the layer name."
                             },
                             "module": {
                                 "type": "string",
-                                "title": "Name of the default module within the Azure provisioning templates",
-                                "description": "Optional. The name of the Azure provisioning module used when provisioning resources. (Default: main)"
+                                "title": "Module name within the folder",
+                                "description": "Optional. The module name within the folder to be used for provisioning. (Default: main)"
                             },
                              "deploymentStacks": {
                                  "$ref": "#/definitions/deploymentStacksConfig"

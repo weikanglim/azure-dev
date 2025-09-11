@@ -80,10 +80,6 @@ func Parse(ctx context.Context, yamlContent string) (*ProjectConfig, error) {
 		return nil, fmt.Errorf("parsing project %s: %w", projectConfig.Name, err)
 	}
 
-	for _, layer := range projectConfig.Infra.Layers {
-		layer.Provider = projectConfig.Infra.Provider
-	}
-
 	if projectConfig.Infra.Path == "" {
 		projectConfig.Infra.Path = "infra"
 	}
@@ -97,6 +93,24 @@ func Parse(ctx context.Context, yamlContent string) (*ProjectConfig, error) {
 	}
 
 	projectConfig.Infra.Path = filepath.FromSlash(projectConfig.Infra.Path)
+
+	for i, layer := range projectConfig.Infra.Layers {
+		layer.Provider = projectConfig.Infra.Provider
+
+		// default the path to be the layer name within the infra path
+		if layer.Path == "" {
+			layer.Path = layer.Name
+		}
+
+		if strings.Contains(layer.Path, "\\") && !strings.Contains(layer.Path, "/") {
+			layer.Path = strings.ReplaceAll(layer.Path, "\\", "/")
+		}
+
+		layer.Path = filepath.FromSlash(layer.Path)
+		layer.Path = filepath.Join(projectConfig.Infra.Path, layer.Path)
+
+		projectConfig.Infra.Layers[i] = layer
+	}
 
 	for key, svc := range projectConfig.Services {
 		svc.Name = key

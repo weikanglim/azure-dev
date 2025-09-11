@@ -91,10 +91,6 @@ func (o *Options) Validate() error {
 		if layer.Name == "" {
 			return errWrap("name must be specified for each provisioning layer")
 		}
-
-		if layer.Path == "" {
-			return errWrap(fmt.Sprintf("%s: path must be specified", layer.Name))
-		}
 	}
 
 	return nil
