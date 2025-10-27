@@ -499,7 +499,8 @@ func (m *Manager) Install(
 
 	span.SetAttributes(
 		fields.ExtensionId.String(extension.Id),
-		fields.ExtensionVersion.String(selectedVersion.Version))
+		fields.ExtensionVersion.String(selectedVersion.Version),
+		fields.ExtensionSource.String(extension.Source))
 
 	log.Printf(
 		"Extension '%s' (version %s) installed successfully to %s\n",

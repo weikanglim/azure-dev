@@ -294,4 +294,6 @@ const (
 	ExtensionId = attribute.Key("extension.id")
 	// The version of the extension.
 	ExtensionVersion = attribute.Key("extension.version")
+	// The source from which the extension was installed.
+	ExtensionSource = attribute.Key("extension.source")
 )
