@@ -1,5 +1,22 @@
 # Release History
 
+## 1.24.0-beta.1 (Unreleased)
+
+### Features Added
+
+- [[#7045]](https://github.com/Azure/azure-dev/pull/7045) Add configurable deploy timeout via `--timeout` flag to `azd deploy` and a `deployTimeout` field in `azure.yaml` service configuration. Timeout resolution order: CLI flag > `azure.yaml` service config > default (1200s / 20 min). Thanks @spboyer for the contribution!
+- [[#7162]](https://github.com/Azure/azure-dev/pull/7162) Add git dirty working directory check before `azd init` with agent mode — prompts users to confirm when uncommitted changes are detected to prevent accidental mixing of changes. Add upfront workflow consent support for tool access to MCP servers (`copilot`, `azure`, `azd`) during agent init.
+
+### Breaking Changes
+
+### Bugs Fixed
+
+- [[#7171]](https://github.com/Azure/azure-dev/pull/7171) Fix agent workflow re-execution failing when cobra command tree was not rebuilt between runs.
+
+### Other Changes
+
+- [[#7175]](https://github.com/Azure/azure-dev/pull/7175) Improve input validation, error handling, and path safety across the CLI including hardened path resolution, vault ID validation, WebSocket origin validation, and sensitive data redaction in error paths. Thanks @jongio for the contribution!
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed
