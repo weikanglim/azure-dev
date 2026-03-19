@@ -21,6 +21,7 @@ Table of Contents
     - [Service Target Service](#service-target-service)
     - [Compose Service](#compose-service)
     - [Workflow Service](#workflow-service)
+    - [Copilot Service](#copilot-service)
 
 ## Getting Started
 
@@ -1358,6 +1359,7 @@ The following are a list of available gRPC services for extension developer to i
 - [Service Target Service](#service-target-service)
 - [Compose Service](#compose-service)
 - [Workflow Service](#workflow-service)
+- [Copilot Service](#copilot-service)
 
 ---
 
@@ -2793,3 +2795,193 @@ func getSubscriptionDetails(ctx context.Context, azdClient *azdext.AzdClient, su
 - Handle multi-tenant scenarios where users access subscriptions through different tenants
 - Validate subscription access before performing operations
 - Set up proper authentication context for Azure SDK calls
+
+---
+
+### Copilot Service
+
+This service provides GitHub Copilot agent capabilities to extensions. Extensions can use it to send prompts, track file changes, monitor usage, and manage sessions — all in headless/autopilot mode that suppresses console output.
+
+> See [copilot.proto](../grpc/proto/copilot.proto) for full message definitions.
+
+#### Initialize
+
+Starts the Copilot client, verifies authentication, and resolves the model and reasoning configuration. Call this before `SendMessage` to warm up the client and validate settings. This call is idempotent.
+
+- **Request:** _InitializeCopilotRequest_
+  - Contains:
+    - `model` (string, optional): Model to configure. Empty uses the existing or default model.
+    - `reasoning_effort` (string, optional): Reasoning effort level (`low`, `medium`, or `high`).
+- **Response:** _InitializeCopilotResponse_
+  - Contains:
+    - `model` (string): Resolved model name.
+    - `reasoning_effort` (string): Resolved reasoning effort level.
+    - `is_first_run` (bool): `true` if this was the first-time configuration.
+
+#### ListSessions
+
+Returns available Copilot sessions for a working directory. Use this to find sessions that can be resumed.
+
+- **Request:** _ListCopilotSessionsRequest_
+  - Contains:
+    - `working_directory` (string, optional): Directory to list sessions for. Empty uses the current working directory.
+- **Response:** _ListCopilotSessionsResponse_
+  - Contains a list of **CopilotSessionMetadata**:
+    - `session_id` (string): Unique session identifier.
+    - `modified_time` (string): Last modified time in RFC 3339 format.
+    - `summary` (string): Optional session summary.
+
+#### SendMessage
+
+Sends a prompt to the Copilot agent. On the first call, a new session is created using the provided configuration. If `session_id` is set, the existing session is resumed. Subsequent calls with the returned `session_id` reuse the same session without re-bootstrapping.
+
+- **Request:** _SendCopilotMessageRequest_
+  - Contains:
+    - `prompt` (string): The prompt or message to send.
+    - `session_id` (string, optional): Session to reuse or resume. Omit to start a new session.
+    - `model` (string, optional): Model override — applies on the first call or when resuming.
+    - `reasoning_effort` (string, optional): Reasoning effort level (`low`, `medium`, `high`).
+    - `system_message` (string, optional): Custom system message appended to the default.
+    - `mode` (string, optional): Agent mode (`autopilot`, `interactive`, `plan`).
+    - `headless` (bool, optional): When `true`, suppresses console output. Recommended for gRPC sessions.
+- **Response:** _SendCopilotMessageResponse_
+  - Contains:
+    - `session_id` (string): Session ID — use in subsequent calls to reuse this session.
+    - `usage` (CopilotUsageMetrics): Usage metrics for this message turn.
+    - `file_changes` ([]CopilotFileChange): Files changed during this message turn.
+
+#### GetUsageMetrics
+
+Returns cumulative usage metrics cached for a session. Metrics accumulate across all `SendMessage` calls within a session.
+
+- **Request:** _GetCopilotUsageMetricsRequest_
+  - Contains:
+    - `session_id` (string): Session to get metrics for.
+- **Response:** _GetCopilotUsageMetricsResponse_
+  - Contains:
+    - `usage` (CopilotUsageMetrics):
+      - `model` (string): Model used.
+      - `input_tokens` (double): Total input tokens consumed.
+      - `output_tokens` (double): Total output tokens consumed.
+      - `total_tokens` (double): Sum of input and output tokens.
+      - `billing_rate` (double): Per-request cost multiplier (e.g., `1.0`, `2.0`).
+      - `premium_requests` (double): Number of premium requests used.
+      - `duration_ms` (double): Total API duration in milliseconds.
+
+#### GetFileChanges
+
+Returns files created, modified, or deleted during a session. File changes accumulate across all `SendMessage` calls within a session.
+
+- **Request:** _GetCopilotFileChangesRequest_
+  - Contains:
+    - `session_id` (string): Session to get file changes for.
+- **Response:** _GetCopilotFileChangesResponse_
+  - Contains a list of **CopilotFileChange**:
+    - `path` (string): File path relative to the working directory.
+    - `change_type` (CopilotFileChangeType): `CREATED`, `MODIFIED`, or `DELETED`.
+
+#### GetMessages
+
+Returns the session event log from the Copilot SDK. Each event contains a type, timestamp, and dynamic data as a `google.protobuf.Struct`. Using `Struct` for event data avoids schema coupling with the SDK, so new event types or fields don't require proto changes.
+
+- **Request:** _GetCopilotMessagesRequest_
+  - Contains:
+    - `session_id` (string): Session to get messages for.
+- **Response:** _GetCopilotMessagesResponse_
+  - Contains a list of **CopilotSessionEvent**:
+    - `type` (string): Event type identifier.
+    - `timestamp` (string): Event timestamp in RFC 3339 format.
+    - `data` (google.protobuf.Struct): Full event data as a dynamic struct.
+
+#### StopSession
+
+Stops and cleans up a Copilot agent session, releasing all associated resources.
+
+- **Request:** _StopCopilotSessionRequest_
+  - Contains:
+    - `session_id` (string): Session to stop.
+- **Response:** _EmptyResponse_
+
+**Example Usage (Go):**
+
+```go
+ctx := azdext.WithAccessToken(cmd.Context())
+azdClient, err := azdext.NewAzdClient()
+if err != nil {
+    return fmt.Errorf("failed to create azd client: %w", err)
+}
+defer azdClient.Close()
+
+copilot := azdClient.Copilot()
+
+// Initialize the Copilot client (optional but recommended)
+initResp, err := copilot.Initialize(ctx, &azdext.InitializeCopilotRequest{
+    Model:           "gpt-4o",
+    ReasoningEffort: "medium",
+})
+if err != nil {
+    return fmt.Errorf("failed to initialize copilot: %w", err)
+}
+fmt.Printf("Resolved model: %s\n", initResp.Model)
+
+// Send the first message — session is created automatically
+sendResp, err := copilot.SendMessage(ctx, &azdext.SendCopilotMessageRequest{
+    Prompt:   "Add error handling to all Go functions in the current directory",
+    Mode:     "autopilot",
+    Headless: true,
+})
+if err != nil {
+    return fmt.Errorf("failed to send message: %w", err)
+}
+
+sessionID := sendResp.SessionId
+fmt.Printf("Session ID: %s\n", sessionID)
+
+// Continue the conversation by reusing the same session
+_, err = copilot.SendMessage(ctx, &azdext.SendCopilotMessageRequest{
+    Prompt:    "Also add tests for the error handling you added",
+    SessionId: sessionID,
+})
+if err != nil {
+    return fmt.Errorf("failed to send follow-up: %w", err)
+}
+
+// Get cumulative usage metrics
+metricsResp, err := copilot.GetUsageMetrics(ctx, &azdext.GetCopilotUsageMetricsRequest{
+    SessionId: sessionID,
+})
+if err != nil {
+    return fmt.Errorf("failed to get metrics: %w", err)
+}
+usage := metricsResp.Usage
+fmt.Printf("Total tokens used: %.0f (input: %.0f, output: %.0f)\n",
+    usage.TotalTokens, usage.InputTokens, usage.OutputTokens)
+
+// Get file changes
+changesResp, err := copilot.GetFileChanges(ctx, &azdext.GetCopilotFileChangesRequest{
+    SessionId: sessionID,
+})
+if err != nil {
+    return fmt.Errorf("failed to get file changes: %w", err)
+}
+fmt.Printf("Files changed: %d\n", len(changesResp.FileChanges))
+for _, change := range changesResp.FileChanges {
+    fmt.Printf("  %s: %s\n", change.ChangeType, change.Path)
+}
+
+// Stop the session when done
+if _, err := copilot.StopSession(ctx, &azdext.StopCopilotSessionRequest{
+    SessionId: sessionID,
+}); err != nil {
+    return fmt.Errorf("failed to stop session: %w", err)
+}
+fmt.Println("Session stopped.")
+```
+
+**Use Cases:**
+
+- Automate code improvements or refactoring as part of a deployment workflow
+- Integrate Copilot-assisted tasks into CI/CD pipelines
+- Build interactive chat experiences within extension CLI commands
+- Track and report AI-assisted file changes for audit or review purposes
+- Compose multi-turn Copilot sessions across multiple extension commands
