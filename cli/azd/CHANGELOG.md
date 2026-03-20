@@ -1,5 +1,21 @@
 # Release History
 
+## Unreleased
+
+### Features Added
+
+- [[#7216]](https://github.com/Azure/azure-dev/pull/7216) Improve AI-assisted error troubleshooting with a category selection prompt (explain, guidance, troubleshoot, or skip) instead of a single consent prompt. Users can configure a default troubleshooting category and auto-fix approval preference that persists across commands.
+- [[#7172]](https://github.com/Azure/azure-dev/pull/7172) Add `CopilotService` gRPC service to the extension framework, enabling extensions to interact with a GitHub Copilot agent for chat, code generation, and context management. See [extension-framework.md](docs/extensions/extension-framework.md) for the full API reference.
+
+### Bugs Fixed
+
+- [[#7218]](https://github.com/Azure/azure-dev/pull/7218) Fix lifecycle hooks (`preprovision`, `postprovision`, `predeploy`, `postdeploy`, etc.) silently not firing when executed as workflow steps inside `azd up`, caused by IoC singleton replacement during workflow step re-execution.
+- [[#7213]](https://github.com/Azure/azure-dev/pull/7213) Fix `azd update` on Linux/macOS for shell script and Homebrew installations. Updates now use install scripts with proper channel switching for Homebrew, symlink resolution, and improved error messages for non-standard installations.
+- [[#7166]](https://github.com/Azure/azure-dev/pull/7166) Fix `azd update` on Windows to use the PowerShell install script (`install-azd.ps1`) with backup/restore safety — the original `azd.exe` is preserved and restored if the update fails. Non-standard MSI installations are now detected and reported with instructions to reinstall.
+- [[#7212]](https://github.com/Azure/azure-dev/pull/7212) Fix `azd up --debug` and `azd up --no-prompt` failing with an unexpected positional argument error when running workflow steps.
+- [[#7193]](https://github.com/Azure/azure-dev/pull/7193) Fix extension framework `PromptService.PromptSubscription` not respecting `AZD_DEMO_MODE`, which caused subscription IDs to appear in demo mode output.
+- [[#7174]](https://github.com/Azure/azure-dev/pull/7174) Fix preflight role assignment check for B2B/guest users where an incorrect principal ID (home-tenant OID instead of resource-tenant guest OID) caused false-positive permission warnings. Also fixes RBAC evaluation to correctly apply per-role `Actions` minus `NotActions` (matching Azure semantics), adds detection of ABAC-conditioned role assignments, and adds `Role Based Access Control Administrator` to the list of sufficient roles in the warning message.
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed

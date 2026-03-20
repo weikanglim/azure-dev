@@ -1725,6 +1725,8 @@ This service manages user prompt interactions for subscriptions, locations, reso
 
 Prompts the user to select a subscription.
 
+> **Note:** When `AZD_DEMO_MODE` is enabled, subscription IDs are masked in the prompt display to avoid leaking sensitive identifiers. The full subscription details are still returned to the extension unchanged.
+
 - **Request:** _PromptSubscriptionRequest_ (empty)
 - **Response:** _PromptSubscriptionResponse_
   - Contains **Subscription**
