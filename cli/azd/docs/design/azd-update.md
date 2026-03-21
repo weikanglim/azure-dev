@@ -180,12 +180,19 @@ All flags persist their values to config, which can also be set directly via `az
 
 | Install Method | Strategy |
 |----------------|----------|
-| `brew` | Shell out: `brew upgrade azure/azd/azd` |
+| `brew` | Dedicated `updateViaBrew` — handles cask detection, channel switching, and reinstall as cask if needed |
 | `winget` | Shell out: `winget upgrade Microsoft.Azd` |
 | `choco` | Shell out: `choco upgrade azd` |
-| `install-azd.sh`, `install-azd.ps1`, `msi`, `deb`, `rpm` | Direct binary download + replace |
+| `install-azd.sh` (macOS/Linux) | `updateViaInstallScript` — downloads and executes the latest install script with channel selection |
+| `install-azd.sh` (Windows) | `updateViaMSI` — downloads and runs the MSI installer |
+| `install-azd.ps1`, `msi` | `updateViaMSI` — downloads and runs the MSI installer with backup/restore on failure |
+| `deb`, `rpm` | Direct binary download + replace |
 
 > **Note**: Linux `deb`/`rpm` packages are standalone files from GitHub Releases — there is no managed apt/dnf repository. These users are treated the same as script-installed users for update purposes.
+
+> **Homebrew detail**: `updateViaBrew` detects whether azd is currently installed as a cask. If not, it reinstalls as a cask before upgrading. Channel switching (stable ↔ daily) is handled by tapping the appropriate formula and running `brew reinstall`. This replaces the previous simple `brew upgrade azure/azd/azd` delegation.
+
+> **MSI robustness**: `updateViaMSI` now backs up the current executable before applying the update. If the MSI installation fails, the backup is automatically restored and clear recovery instructions are shown.
 
 #### Direct Binary Update Flow (Script/MSI Users)
 
@@ -226,12 +233,12 @@ Most install methods write to system directories requiring elevation:
 | `/opt/microsoft/azd/` (Linux script) | Yes — `sudo cp` | Direct binary replacement |
 | `C:\Program Files\` (Windows MSI) | Yes — handled by MSI installer | MSI via `msiexec /i` |
 | `~/.azd/bin/` (Windows PowerShell script) | No — user-writable | MSI via `msiexec /i` |
-| Homebrew prefix | No — user-writable | Delegates to `brew upgrade azure/azd/azd` |
+| Homebrew prefix | No — user-writable | Delegates to `updateViaBrew` (cask-aware) |
 | User home dirs | No | Direct binary replacement |
 
 **Windows**: Updates always use the MSI installer (`msiexec /i <path> /qn`), which handles UAC elevation when installing to protected locations like `C:\Program Files\`. Downgrades between GA versions are not supported via MSI.
 
-**macOS/Linux (brew)**: Homebrew tracks installed assets, so azd never overwrites brew-managed binaries directly. Same-channel updates delegate to `brew upgrade azure/azd/azd`. Channel switching (stable ↔ daily) currently requires uninstalling brew and reinstalling via script. A future brew pre-release formula could enable `brew` to handle daily builds natively.
+**macOS/Linux (brew)**: The dedicated `updateViaBrew` method handles Homebrew cask installations directly. It detects whether azd is installed as a cask and reinstalls as a cask if needed. Channel switching (stable ↔ daily) is supported by tapping the appropriate formula — no manual uninstall/reinstall is required.
 
 **macOS/Linux (script)**: For `sudo`, azd passes through stdin/stdout so the user sees the standard OS password prompt. Uses `CommandRunner` (`pkg/exec/command_runner.go`) for exec.
 
