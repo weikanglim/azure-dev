@@ -301,3 +301,58 @@ Extensions can participate in error handling by:
 
 1. **Returning `ErrorWithSuggestion`**: Extensions can directly wrap errors with suggestions
 2. **Registering named handlers**: Extensions can register `ErrorHandler` implementations via IoC for dynamic suggestion computation
+
+---
+
+## AI-Powered Error Troubleshooting
+
+When the Copilot agent is enabled and an error is not handled by a static rule, `ErrorMiddleware` offers an interactive AI-powered troubleshooting flow. This feature requires the Copilot agent to be configured (see `azd config set copilot.enabled true`).
+
+### Troubleshooting Flow
+
+The flow is a three-step interactive process:
+
+```
+Step 1: Category Selection
+  User chooses the scope of troubleshooting:
+    • explain     — AI explains what went wrong
+    • guidance    — AI provides step-by-step fix instructions
+    • troubleshoot — AI provides both explanation and guidance
+    • skip        — Skips AI troubleshooting entirely
+
+Step 2: AI Analysis
+  Based on the chosen category, azd sends the error context to the
+  Copilot agent using the appropriate prompt template:
+    • explain.tmpl        → explanation only
+    • guidance.tmpl       → fix guidance only
+    • troubleshoot_manual.tmpl → full explanation + guidance
+
+Step 3: Fix Offer (optional)
+  If AI analysis completes, the user is offered a chance to let the
+  agent attempt an automated fix. If the fix is applied, the user is
+  prompted to retry the original command.
+```
+
+### Configuration
+
+Two configuration keys control the default troubleshooting behavior:
+
+| Config Key | Description | Values |
+|------------|-------------|--------|
+| `ai.error.category` | Default troubleshooting category (skips Step 1 prompt) | `explain`, `guidance`, `troubleshoot`, `skip` |
+| `ai.error.autoFix` | Auto-approve the fix step (skips Step 3 prompt) | `true`, `false` |
+
+Set defaults to avoid being prompted each time:
+
+```bash
+# Always go straight to full troubleshooting with auto-fix
+azd config set ai.error.category troubleshoot
+azd config set ai.error.autoFix true
+
+# Only get an explanation, never apply fixes
+azd config set ai.error.category explain
+```
+
+### When AI Troubleshooting Is Skipped
+
+AI troubleshooting is bypassed for control-flow errors (e.g., user cancellation, context deadline exceeded) and when no AI error analysis is configured. Static `ErrorWithSuggestion` rules always run first — AI analysis only triggers when no rule matched the error.
