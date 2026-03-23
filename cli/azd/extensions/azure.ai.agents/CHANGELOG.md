@@ -1,5 +1,9 @@
 # Release History
 
+## 0.1.16-preview (2026-03-23)
+
+- [[#7147]](https://github.com/Azure/azure-dev/pull/7147) Add template selection flow to `azd ai agent init`: when no manifest is provided, users are prompted to use code in the current directory or start from a curated list of agent templates; empty directories automatically go to template selection
+
 ## 0.1.15-preview (2026-03-13)
 
 - [[#7080]](https://github.com/Azure/azure-dev/pull/7080) Fix authentication failures (`AADSTS70043`/`AADSTS700082`) for multi-tenant and guest users by using `UserTenantId` for credential resolution
