@@ -1,5 +1,23 @@
 # Release History
 
+## 0.1.18-preview (2026-03-23)
+
+- [[#7147]](https://github.com/Azure/azure-dev/pull/7147) Add `azd ai agent init` support for initializing from an agent template.
+
+## 0.1.17-preview (2026-03-20)
+
+- [[#7214]](https://github.com/Azure/azure-dev/pull/7214) Add ASCII art banner with Foundry branding and version info displayed at extension startup.
+- [[#7217]](https://github.com/Azure/azure-dev/pull/7217) Update container settings to use discrete CPU and memory options, and remove min/max replicas prompts.
+
+## 0.1.16-preview (2026-03-18)
+
+- [[#7141]](https://github.com/Azure/azure-dev/pull/7141) Add `azd ai agent files` command group with `upload`, `download`, `list`, and `remove` subcommands for managing session-scoped files on hosted agent sandboxes.
+- [[#7175]](https://github.com/Azure/azure-dev/pull/7175) Improve input validation, error handling, and path safety across the extension, including hardened path resolution, sensitive data redaction in error paths, and WebSocket origin validation.
+
+### Breaking Changes
+
+- [[#7181]](https://github.com/Azure/azure-dev/pull/7181) Update `azd ai agent show` and `azd ai agent monitor` commands to read agent name and version from the azd service entry, removing the requirement to pass them as parameters.
+
 ## 0.1.15-preview (2026-03-13)
 
 - [[#7080]](https://github.com/Azure/azure-dev/pull/7080) Fix authentication failures (`AADSTS70043`/`AADSTS700082`) for multi-tenant and guest users by using `UserTenantId` for credential resolution
