@@ -1,5 +1,20 @@
 # Release History
 
+## Unreleased
+
+### Features Added
+
+- [[#7236]](https://github.com/Azure/azure-dev/pull/7236) `azd auth status --output json` now exits with a non-zero exit code when the user is unauthenticated (interactive mode is unchanged) and includes an `expiresOn` field in JSON output for proactive re-authentication. AI agents can use this command as a structured auth validation endpoint: `azd auth status --output json` returns exit 0 with `{"status":"authenticated","expiresOn":"..."}` when valid, or exit 1 with `{"status":"unauthenticated"}` when not logged in. Thanks @spboyer for the contribution!
+
+### Bugs Fixed
+
+- [[#7223]](https://github.com/Azure/azure-dev/pull/7223) Fix flex-consumption function app deployments failing when the project's `.funcignore` file is not compatible with `remoteBuild: true`. `remoteBuild` is now defaulted intelligently based on `.funcignore` contents, and setting `remoteBuild: true` explicitly will fail fast if `.funcignore` contains `node_modules`.
+- [[#7293]](https://github.com/Azure/azure-dev/pull/7293) Fix `azd update --channel daily` error suggestion on Windows to suggest the PowerShell install command instead of `curl`/`bash` when azd is installed via WinGet.
+
+### Other Changes
+
+- [[#7250]](https://github.com/Azure/azure-dev/pull/7250) Add targeted error suggestions for Container Apps (`ContainerAppOperationError`, `InvalidTemplateDeployment`) and ARM (`RoleAssignmentExists`, `InvalidResourceGroupLocation`) deployment failures with actionable guidance. Thanks @spboyer for the contribution!
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed
