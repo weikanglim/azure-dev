@@ -1,6 +1,10 @@
 # Release History
 
 
+## 0.0.5-preview (2026-03-24)
+
+- Improved error handling for 403 (Forbidden) errors during `custom create` with a clear error message, guidance on required Azure RBAC roles, and links to prerequisite and RBAC documentation to help resolve permission issues.
+
 ## 0.0.4-preview (2026-03-17)
 
 - Added async model registration with server-side validation and polling support
