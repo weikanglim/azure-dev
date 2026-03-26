@@ -1,5 +1,37 @@
 # External Authentication
 
+## Agent Auth Validation (`azd auth status`)
+
+AI agents and CI systems can validate authentication status before invoking `azd` commands using the `auth status` command with machine-readable output:
+
+```bash
+azd auth status --output json
+```
+
+**Authenticated (exit code 0):**
+
+```json
+{
+  "status": "authenticated",
+  "expiresOn": "2026-03-26T14:30:00Z",
+  ...
+}
+```
+
+**Unauthenticated (exit code 1):**
+
+```json
+{
+  "status": "unauthenticated"
+}
+```
+
+The `expiresOn` field enables agents to proactively re-authenticate before tokens expire. Exit codes only apply in `--output json` mode — interactive usage is unchanged.
+
+> **Note:** This agent-friendly behavior was added in azd v1.23.13.
+
+---
+
 ## Problem
 
 As part of its operation, `azd` needs to make calls to different Azure services. For example `azd provision` calls the ARM control plane to submit a deployment. `azd deploy` may need to make management or data plane calls to deploy the customer code that it has built.

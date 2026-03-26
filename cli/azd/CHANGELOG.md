@@ -1,5 +1,58 @@
 # Release History
 
+## 1.23.13 (2026-03-26)
+
+### Features Added
+
+- [[#7247]](https://github.com/Azure/azure-dev/pull/7247) Add actionable suggestion to set `remoteBuild: true` for Container Apps and AKS services when Docker is not installed or not running. Thanks @spboyer for the contribution!
+- [[#7236]](https://github.com/Azure/azure-dev/pull/7236) Improve `azd auth status --output json` to exit non-zero when unauthenticated and include an `expiresOn` field, making it suitable as an auth validation endpoint for AI agents. Thanks @spboyer for the contribution!
+
+### Bugs Fixed
+
+- [[#7329]](https://github.com/Azure/azure-dev/pull/7329) Fix nil panic and incorrect workflow continuation when user declines preflight validation warnings; `azd provision` and `azd up` now exit cleanly with exit code 0.
+- [[#7346]](https://github.com/Azure/azure-dev/pull/7346) Fix extension startup failures on Windows caused by IPv4/IPv6 address mismatch in the gRPC server address, and increase extension startup timeout from 5s to 15s. Thanks @spboyer for the contribution!
+- [[#7311]](https://github.com/Azure/azure-dev/pull/7311) Fix `.funcignore` parsing failures caused by UTF-8 BOM and incorrect negation pattern handling in zip packaging. Thanks @jongio for the contribution!
+- [[#7250]](https://github.com/Azure/azure-dev/pull/7250) Add targeted error suggestions for common Container Apps and ARM deployment failures including `ContainerAppOperationError`, `InvalidTemplateDeployment`, `RoleAssignmentExists`, and `InvalidResourceGroupLocation`. Thanks @spboyer for the contribution!
+
+### Other Changes
+
+- [[#7235]](https://github.com/Azure/azure-dev/pull/7235) Fix auth error telemetry classification to properly categorize `login_required`, `not_logged_in`, and authentication failures under the `aad` service name. Thanks @spboyer for the contribution!
+- [[#7330]](https://github.com/Azure/azure-dev/pull/7330) Add `azure.yaml` schema metadata to enable automatic schema association in JetBrains IDEs, Neovim, and other editors via the SchemaStore catalog.
+
+## 1.23.12 (2026-03-24)
+
+### Bugs Fixed
+
+- [[#7223]](https://github.com/Azure/azure-dev/pull/7223) Improve `.funcignore` handling for flex-consumption function apps by inferring `remoteBuild` from file contents and failing fast on incompatible configurations.
+- [[#7274]](https://github.com/Azure/azure-dev/pull/7274) Revert env-flag change from v1.23.11 to fix regression where the `-e` shorthand for `--environment` conflicted with extension commands that use `-e` for their own flags (e.g., `--project-endpoint` in `azure.ai.models` and `azure.ai.finetune`), restoring compatibility with those extensions.
+
+### Other Changes
+
+- [[#7241]](https://github.com/Azure/azure-dev/pull/7241) Improve telemetry error classification by routing MCP tool, Copilot agent, and container/extension error spans through `MapError` to reduce unclassified error entries. Thanks @spboyer for the contribution!
+- [[#7253]](https://github.com/Azure/azure-dev/pull/7253) Fix `copilot.session.id` telemetry field classification to use the correct PII category.
+
+## 1.23.11 (2026-03-20)
+
+### Features Added
+
+- [[#7045]](https://github.com/Azure/azure-dev/pull/7045) Add `--timeout` flag to `azd deploy` and a `deployTimeout` service configuration field in `azure.yaml` for user-configurable deployment timeouts (CLI flag > `azure.yaml` > default 1200 seconds). Thanks @spboyer for the contribution!
+- [[#7162]](https://github.com/Azure/azure-dev/pull/7162) Add git dirty working directory check when running `azd init` with "Set up with GitHub Copilot (Preview)", prompting for confirmation before modifying uncommitted changes, and add upfront MCP server tool consent prompt.
+- [[#7172]](https://github.com/Azure/azure-dev/pull/7172) Add `CopilotService` gRPC service to the extension framework, enabling extensions to programmatically interact with GitHub Copilot agent capabilities (initialize sessions, send messages, retrieve usage metrics and file changes).
+- [[#7194]](https://github.com/Azure/azure-dev/pull/7194) Rebrand `azd init` agent experience to "Set up with GitHub Copilot (Preview)" with improved prompt quality and system message guidance.
+- [[#7216]](https://github.com/Azure/azure-dev/pull/7216) Improve AI-assisted error troubleshooting with a multi-step flow: select a troubleshooting category (explain, guidance, troubleshoot, or skip), optionally allow the agent to apply a fix, and retry the failed command.
+
+### Bugs Fixed
+
+- [[#7035]](https://github.com/Azure/azure-dev/pull/7035) Fix default environment variables leaking into extension processes when a different environment is specified with `-e`.
+- [[#7171]](https://github.com/Azure/azure-dev/pull/7171) Fix "context cancelled" errors when retrying `azd` commands after GitHub Copilot agent troubleshooting, by rebuilding the cobra command tree on each workflow re-execution.
+- [[#7174]](https://github.com/Azure/azure-dev/pull/7174) Fix preflight role assignment permission check producing false-positive warnings for B2B/guest users by resolving the principal ID against the resource tenant, and fix per-role RBAC evaluation to match Azure semantics.
+- [[#7175]](https://github.com/Azure/azure-dev/pull/7175) Fix security issues: path traversal in extensions and templates, WebSocket origin validation, JWT hardening, and sensitive data redaction. Thanks @jongio for the contribution!
+- [[#7193]](https://github.com/Azure/azure-dev/pull/7193) Fix extension `PromptSubscription` not masking subscription IDs when `AZD_DEMO_MODE` is enabled.
+
+### Other Changes
+
+- [[#7199]](https://github.com/Azure/azure-dev/pull/7199) Add telemetry instrumentation for Copilot agent flows, including session, initialization, usage metrics, and consent fields.
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed
