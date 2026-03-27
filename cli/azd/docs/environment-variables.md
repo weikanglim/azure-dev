@@ -10,6 +10,7 @@ Environment variables that can be used to configure `azd` behavior, usually set 
 - `AZD_BUILDER_IMAGE`: The builder docker image used to perform Dockerfile-less builds.
 - `AZD_CONFIG_DIR`: The file path of the user-level configuration directory.
 - `AZD_DEMO_MODE`: If true, enables demo mode. This hides personal output, such as subscription IDs, from being displayed in output.
+- `AZD_EXT_TIMEOUT`: The number of seconds to wait for an `azd` extension to start up and signal readiness (default: `15`). Increase this value if extensions fail to start on slow machines or cold-start environments such as Windows with Defender scanning enabled.
 - `AZD_FORCE_TTY`: If true, forces `azd` to write terminal-style output.
 - `AZD_IN_CLOUDSHELL`: If true, `azd` runs with Azure Cloud Shell specific behavior.
 - `AZD_SKIP_UPDATE_CHECK`: If true, skips the out-of-date update check output that is typically printed at the end of the command.
