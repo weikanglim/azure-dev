@@ -69,67 +69,21 @@ curl -fsSL https://aka.ms/install-azd.sh | bash
 Enable tab completion for `bash`, `zsh`, `fish`, or `powershell`:
 
 ```bash
-azd completion <shell> --help
+azd completion [bash|zsh|fish|powershell]
 ```
-
----
-
-## Uninstall
-
-<details>
-<summary><strong>Windows</strong></summary>
-
-- **v0.5.0+**: Use "Add or remove programs" or your package manager (`winget uninstall`, `choco uninstall`)
-- **v0.4.0 and earlier**:
-  ```powershell
-  powershell -ex AllSigned -c "Invoke-RestMethod 'https://aka.ms/uninstall-azd.ps1' | Invoke-Expression"
-  ```
-
-</details>
-
-<details>
-<summary><strong>Linux / macOS</strong></summary>
-
-```bash
-curl -fsSL https://aka.ms/uninstall-azd.sh | bash
-```
-
-Or use your package manager's uninstall command.
-
-</details>
-
----
-
-## Data Collection
-
-This software may collect usage data and send it to Microsoft to help improve our products. You can opt out by setting:
-
-```bash
-export AZURE_DEV_COLLECT_TELEMETRY=no
-```
-
-See the [Microsoft Privacy Statement](https://go.microsoft.com/fwlink/?LinkId=521839) for details.
 
 ---
 
 ## Contributing
 
-We welcome contributions! Please see our [contributing guide](cli/azd/CONTRIBUTING.md) for details.
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit [https://cla.microsoft.com](https://cla.microsoft.com).
 
-Most contributions require a [Contributor License Agreement (CLA)](https://cla.microsoft.com). A bot will guide you through this when you open a PR.
-
-This project follows the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). Questions? Contact [opencode@microsoft.com](mailto:opencode@microsoft.com).
-
-### Template Authors
-
-Microsoft employees and partners contributing official templates should follow the [template standardization guidelines](https://github.com/Azure-Samples/azd-template-artifacts).
+Check out our [Contributing Guide](CONTRIBUTING.md) to get started with local development and to understand our pull request process.
 
 ---
 
-## Trademarks
-
-This project may contain Microsoft trademarks or logos. Use of these must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/legal/intellectualproperty/trademarks). Third-party trademarks are subject to their respective policies.
-
 ## License
 
-Licensed under the [MIT](LICENSE) license.
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Licensed under the [MIT](LICENSE) License.
