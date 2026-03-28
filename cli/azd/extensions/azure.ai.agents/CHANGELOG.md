@@ -1,5 +1,10 @@
 # Release History
 
+## 0.1.16-preview (Unreleased)
+
+- [[#7355]](https://github.com/Azure/azure-dev/pull/7355) Set `APPLICATIONINSIGHTS_CONNECTION_NAME` environment variable during init to allow Bicep to reference the connection by name and avoid creating redundant connections
+- [[#7355]](https://github.com/Azure/azure-dev/pull/7355) Disable capability host provisioning (`ENABLE_CAPABILITY_HOST=false`) when `enableHostedAgentVNext` is enabled, to support vnext deployment scenarios
+
 ## 0.1.15-preview (2026-03-13)
 
 - [[#7080]](https://github.com/Azure/azure-dev/pull/7080) Fix authentication failures (`AADSTS70043`/`AADSTS700082`) for multi-tenant and guest users by using `UserTenantId` for credential resolution
