@@ -1,5 +1,9 @@
 # Release History
 
+## 0.1.16-preview (Unreleased)
+
+- [[#7332]](https://github.com/Azure/azure-dev/pull/7332) Significantly speed up Foundry project discovery during `azd ai agent init`. Project listing now uses a single ARM subscription query instead of a sequential per-account scan (~27× faster), and providing `--project-id` short-circuits to a direct `GET` instead of a full subscription scan (~15× faster).
+
 ## 0.1.15-preview (2026-03-13)
 
 - [[#7080]](https://github.com/Azure/azure-dev/pull/7080) Fix authentication failures (`AADSTS70043`/`AADSTS700082`) for multi-tenant and guest users by using `UserTenantId` for credential resolution
