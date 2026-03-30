@@ -1,5 +1,15 @@
 # Release History
 
+## 1.24.0-beta.1 (Unreleased)
+
+### Bugs Fixed
+
+- [[#7356]](https://github.com/Azure/azure-dev/pull/7356) Fix panic when running `azd auth token` with an unsupported `--output` value (e.g. `--output none`); the error is now returned cleanly instead of causing a nil-dereference panic.
+
+### Other Changes
+
+- [[#7298]](https://github.com/Azure/azure-dev/pull/7298) Restore Authenticode code-sign verification for Windows MSI installs triggered by `azd update`; the previous `-SkipVerify` bypass has been removed so the downloaded MSI is now verified before execution.
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed
