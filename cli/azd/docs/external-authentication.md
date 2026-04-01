@@ -70,9 +70,41 @@ The server should take this request and fetch a token using the given configurat
 
 The message is returned as is as the `error` for the `GetToken` call on the client side.
 
-## Implementation
+## Using `azd auth token`
 
-The `azd` CLI implements the client side of this feature in the [`pkg/auth/remote_credential.go`](../pkg/auth/remote_credential.go).
+The `azd auth token` command lets external tools and scripts obtain an Azure access token using the currently signed-in azd principal.
+
+### Default output (raw token)
+
+Running the command with no flags prints the raw access token to stdout, making it easy to pipe directly into scripts:
+
+```bash
+TOKEN=$(azd auth token)
+curl -H "Authorization: Bearer $TOKEN" https://management.azure.com/subscriptions?api-version=2022-09-01
+```
+
+### Structured JSON output
+
+Pass `--output json` to receive a structured JSON object that also includes the token expiration time:
+
+```bash
+azd auth token --output json
+```
+
+```json
+{
+  "token": "<access-token>",
+  "expiresOn": "2026-03-31T20:00:00Z"
+}
+```
+
+### Optional flags
+
+- `--scope` — override the requested OAuth scope (can be specified multiple times for multiple scopes). Defaults to the Azure management scope.
+- `--tenant-id` — request a token for a specific tenant.
+- `--claims` — pass additional claims in the token request.
+
+
 
 The VS Code implementation of the server is in [src/utils/authServer.ts](../../../ext/vscode/src/utils/).
 
