@@ -1323,6 +1323,84 @@ if err := host.Run(ctx); err != nil {
 
 ```
 
+## Key Vault Secret Resolution
+
+Extensions frequently need to read secrets that are stored in Azure Key Vault and referenced in the `azd` environment. The `azdext` package ships a `KeyVaultResolver` that handles this transparently for Go-based extensions.
+
+### Automatic Host-Level Resolution
+
+When azd launches an extension, it automatically resolves any Key Vault secret references found in the azd-managed environment variables (`akvs://` and `@Microsoft.KeyVault(...)` formats) before they are passed to the extension process. Plain system environment variables from `os.Environ()` are **not** modified.
+
+This means extension code often does not need to call `KeyVaultResolver` directly — secrets are already resolved by the time the extension starts.
+
+### Using `KeyVaultResolver` in Extension SDK
+
+For cases where an extension needs to resolve Key Vault references itself (for example, when reading references from a config file or constructing references at runtime), the `KeyVaultResolver` type in `pkg/azdext` provides a full-featured client.
+
+**Supported reference formats:**
+
+| Format | Example |
+|--------|---------|
+| `akvs://` (preferred) | `akvs://<subscription-id>/<vault-name>/<secret-name>` |
+| `@Microsoft.KeyVault(SecretUri=...)` | `@Microsoft.KeyVault(SecretUri=https://my-vault.vault.azure.net/secrets/my-secret)` |
+| `@Microsoft.KeyVault(VaultName=...;SecretName=...)` | `@Microsoft.KeyVault(VaultName=my-vault;SecretName=my-secret)` |
+
+**Public API:**
+
+- `IsSecretReference(s string) bool` — returns `true` when the string is any of the three supported formats (strips surrounding quotes/whitespace).
+- `ParseSecretReference(ref string) (*SecretReference, error)` — parses a reference into vault and secret components.
+- `NewKeyVaultResolver(credential azcore.TokenCredential, opts *KeyVaultResolverOptions) (*KeyVaultResolver, error)` — creates a resolver. Use `azdext.NewTokenProvider` to obtain a credential from the extension's access token.
+- `Resolve(ctx, ref string) (string, error)` — resolves a single reference to its secret value.
+- `ResolveMap(ctx, refs map[string]string) (map[string]string, error)` — resolves a map where all values are secret references.
+- `ResolveEnvironment(ctx, env map[string]string) (map[string]string, error)` — resolves a mixed env-var map: values that are secret references are replaced, plain values are passed through unchanged.
+
+**Example:**
+
+```go
+import (
+    "github.com/azure/azure-dev/cli/azd/pkg/azdext"
+)
+
+func resolveSecrets(ctx context.Context, azdClient *azdext.AzdClient) error {
+    // Obtain a credential backed by the extension's azd access token.
+    tp, err := azdext.NewTokenProvider(ctx, azdClient, nil)
+    if err != nil {
+        return fmt.Errorf("creating token provider: %w", err)
+    }
+
+    resolver, err := azdext.NewKeyVaultResolver(tp, nil)
+    if err != nil {
+        return fmt.Errorf("creating resolver: %w", err)
+    }
+
+    // Resolve a single reference.
+    secret, err := resolver.Resolve(ctx, "akvs://my-sub/my-vault/my-secret")
+    if err != nil {
+        return fmt.Errorf("resolving secret: %w", err)
+    }
+    fmt.Println("secret value:", secret)
+
+    // Resolve all Key Vault references in a mixed env map.
+    env := map[string]string{
+        "DB_HOST":     "mydb.postgres.database.azure.com",
+        "DB_PASSWORD": "akvs://my-sub/my-vault/db-password",
+    }
+    resolved, err := resolver.ResolveEnvironment(ctx, env)
+    if err != nil {
+        return fmt.Errorf("resolving env: %w", err)
+    }
+    // resolved["DB_HOST"] == "mydb.postgres.database.azure.com"  (unchanged)
+    // resolved["DB_PASSWORD"] == "<actual secret value>"
+    return nil
+}
+```
+
+**Error handling:**
+
+All domain errors from `Resolve` (invalid reference, secret not found, authentication failure) are returned as `*KeyVaultResolveError`. You can inspect `err.Reason` (a `ResolveReason` constant) to distinguish between `ResolveReasonInvalidReference`, `ResolveReasonNotFound`, and `ResolveReasonAccessDenied`.
+
+---
+
 ## Developer Artifacts
 
 `azd` leverages gRPC for the communication protocol between Core `azd` and extensions. gRPC client & server components are automatically generated from profile files.
@@ -1735,6 +1813,7 @@ Prompts the user to select a location.
 
 - **Request:** _PromptLocationRequest_
   - `azure_context` (AzureContext)
+  - `allowed_locations` (repeated string): optional list of location names to filter the prompt choices (case-insensitive). When set, only matching locations are shown to the user. An error is returned if the default location is filtered out.
 - **Response:** _PromptLocationResponse_
   - Contains **Location**
 
