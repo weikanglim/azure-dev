@@ -1,5 +1,33 @@
 # External Authentication
 
+## Getting a Token via `azd auth token`
+
+The `azd auth token` command can be used to print an access token for the currently signed-in account. This is useful for scripts and tools that need to authenticate against Azure APIs.
+
+```bash
+# Print the raw access token (default)
+azd auth token
+
+# Print structured JSON with token and expiration time
+azd auth token --output json
+```
+
+The default output is the raw token string, making it easy to capture in scripts:
+
+```bash
+TOKEN=$(azd auth token)
+curl -H "Authorization: Bearer $TOKEN" https://management.azure.com/subscriptions?api-version=2022-12-01
+```
+
+Use `--output json` when you also need the token's expiration time:
+
+```json
+{
+  "token": "<access_token>",
+  "expiresOn": "2024-01-01T00:00:00Z"
+}
+```
+
 ## Problem
 
 As part of its operation, `azd` needs to make calls to different Azure services. For example `azd provision` calls the ARM control plane to submit a deployment. `azd deploy` may need to make management or data plane calls to deploy the customer code that it has built.

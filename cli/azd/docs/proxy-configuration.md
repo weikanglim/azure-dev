@@ -30,3 +30,16 @@ export HTTPS_PROXY=<PROXY_ADDRESS>
 Per Go `net/http` package docs
 
 > DefaultTransport is the default implementation of Transport and is used by DefaultClient. It establishes network connections as needed and caches them for reuse by subsequent calls. It uses HTTP proxies as directed by the environment variables HTTP_PROXY, HTTPS_PROXY and NO_PROXY (or the lowercase versions thereof).
+
+## Docker Build Network
+
+If your Docker builds require access to a network proxy or need host networking (for example, to resolve dependencies through a corporate proxy during `docker build`), you can configure the Docker network mode for a service in `azure.yaml`:
+
+```yaml
+services:
+  web:
+    docker:
+      network: host
+```
+
+The `network` field maps to the `--network` flag of `docker build`. Common values are `host` (use the host's network stack) or `bridge` (default Docker bridge network). This is particularly useful when building containers in environments where internet access is only available through the host network.
