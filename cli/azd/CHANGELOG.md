@@ -1,5 +1,18 @@
 # Release History
 
+## 1.24.0 (Unreleased)
+
+### Features Added
+
+- [[#7392]](https://github.com/Azure/azure-dev/pull/7392) Add `--non-interactive` as a global flag alias for `--no-prompt` and support the `AZD_NON_INTERACTIVE` environment variable for enabling non-interactive mode. When set to a truthy value (`true`, `1`, etc.), `AZD_NON_INTERACTIVE` enables no-prompt mode. Setting the variable (even to `false`) suppresses agent auto-detection, giving users explicit control. Priority order: explicit flag > env var > agent auto-detection. Thanks @spboyer for the contribution!
+- [[#7382]](https://github.com/Azure/azure-dev/pull/7382) Add first-class hook support for individual provisioning layers via `infra.layers[].hooks` in `azure.yaml`. Layer-level hooks run during `azd provision`, and `azd hooks run` now supports `--layer` for filtering to a specific layer.
+- [[#7361]](https://github.com/Azure/azure-dev/pull/7361) Add `docker.network` option to `azure.yaml` service config that passes `--network` to `docker build`. This enables Docker builds behind corporate proxies that require host networking (e.g., `docker.network: host`). Thanks @spboyer for the contribution!
+
+### Other Changes
+
+- [[#7417]](https://github.com/Azure/azure-dev/pull/7417) Improve `azd update` error message for per-machine MSI installations to indicate the installation may be administrator-managed and suggest `AZD_SKIP_UPDATE_CHECK=1` to suppress update notifications. Updated installer documentation accordingly.
+- [[#7313]](https://github.com/Azure/azure-dev/pull/7313) Deprecate the `-e` short flag for `--project-endpoint` in the `azure.ai.models` and `azure.ai.finetune` extensions. The flag still works but displays a deprecation warning; use `--project-endpoint` instead.
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed

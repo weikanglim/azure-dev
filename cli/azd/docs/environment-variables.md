@@ -11,6 +11,7 @@ Environment variables that can be used to configure `azd` behavior, usually set 
 - `AZD_CONFIG_DIR`: The file path of the user-level configuration directory.
 - `AZD_DEMO_MODE`: If true, enables demo mode. This hides personal output, such as subscription IDs, from being displayed in output.
 - `AZD_FORCE_TTY`: If true, forces `azd` to write terminal-style output.
+- `AZD_NON_INTERACTIVE`: If set to a truthy value (`true`, `1`, `TRUE`, etc.), enables non-interactive (no-prompt) mode equivalent to passing `--no-prompt`. Setting this variable (even to `false`) suppresses agent auto-detection, giving explicit control over interactive behavior. Priority order: explicit `--no-prompt`/`--non-interactive` flag > `AZD_NON_INTERACTIVE` > agent auto-detection.
 - `AZD_IN_CLOUDSHELL`: If true, `azd` runs with Azure Cloud Shell specific behavior.
 - `AZD_SKIP_UPDATE_CHECK`: If true, skips the out-of-date update check output that is typically printed at the end of the command.
 
