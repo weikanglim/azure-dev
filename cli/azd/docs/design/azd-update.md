@@ -1,7 +1,7 @@
 # Design: `azd update`, Auto-Update & Channel Management
 
 **Epic**: [#6721](https://github.com/Azure/azure-dev/issues/6721)
-**Status**: Draft
+**Status**: Beta
 
 ---
 
@@ -13,7 +13,7 @@ Today, when a new version of `azd` is available, users see a warning message wit
 2. **Auto-update** — opt-in background updates applied at next startup
 3. **Channel management** — ability to switch between `stable` and `daily` builds
 
-The feature ships as a hidden command behind an alpha feature toggle (`alpha.update`) for safe rollout. When the toggle is off, there are zero changes to existing behavior — `azd version`, update notifications, everything stays exactly as it is today.
+The feature previously shipped as an alpha command behind the `alpha.update` feature toggle. As of `1.24.0`, `azd update` is promoted to **Beta** and is available by default — no feature toggle required.
 
 ---
 
@@ -361,14 +361,11 @@ Uses the existing azd telemetry infrastructure (OpenTelemetry). New telemetry fi
 
 These codes are integrated into azd's `MapError` pipeline, so update failures show up properly in telemetry dashboards alongside other command errors.
 
-### 8. Feature Toggle (Alpha Gate)
+### 8. Feature Stage (Beta)
 
-The entire update feature ships behind `alpha.update` (default: off). This means:
+`azd update` is promoted to **Beta** as of `1.24.0` and is available by default without any feature flag. Users will see a one-time Beta notice on first use, and a default update channel (`stable`) is persisted to config so the notice is only shown once.
 
-- **Toggle off** (default): Zero behavior changes. `azd version` output is the same. Update notification shows the existing platform-specific install instructions. `azd update` returns an error telling the user to enable the feature.
-- **Toggle on** (`azd config set alpha.update on`): All update features are active — `azd update` works, auto-update stages/applies, `azd version` shows the channel suffix, notifications say "run `azd update`."
-
-This lets us roll out to internal users first, gather feedback, and fix issues before broader availability. Once stable, the toggle can be removed and the feature enabled by default.
+Previously, the feature shipped behind the `alpha.update` flag. All references to that flag have been removed.
 
 ### 9. Update Banner Suppression
 
