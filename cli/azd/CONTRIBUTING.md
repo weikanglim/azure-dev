@@ -20,7 +20,7 @@ In general, to make contributions a smooth and easy experience, we encourage the
 
 Prerequisites:
 
-- [Go](https://go.dev/dl/) 1.26
+- [Go](https://go.dev/dl/) 1.26.1
 
 Build:
 
@@ -49,11 +49,18 @@ automatically adds that directory to your PATH if it isn't already there.
 
 ### Preflight (all quality checks)
 
-Run all pre-commit checks (formatting, copyright headers, linting, spell check, build, unit tests) in one command:
+Run all pre-commit checks (formatting, copyright headers, linting, spell check, build, unit tests, and playback tests) in one command:
 
 ```bash
 cd cli/azd
 mage preflight
+```
+
+To run only the playback tests (functional tests replayed from recorded cassettes, no Azure credentials needed):
+
+```bash
+cd cli/azd
+mage playbackTests
 ```
 
 Run tests:
@@ -90,6 +97,16 @@ If `go fix -diff` reports any changes, apply them with `go fix ./...` and commit
 CI enforces this check — PRs with pending `go fix` suggestions will fail the lint workflow.
 
 > Note: On Windows you may need to add `C:\Program Files\Git\usr\bin` to `%PATH%`
+
+### Go Version Management
+
+When bumping the Go version across the repository, use the `Update-GoVersion.ps1` script instead of manually editing each file. It updates all `go.mod` files, Dockerfiles with `golang:` base images, and the ADO pipeline template in one command:
+
+```powershell
+pwsh eng/scripts/Update-GoVersion.ps1 -NewVersion 1.27.0
+```
+
+CI enforces version consistency via the `validate-go-version` workflow, which runs on PRs that touch `go.mod`, `Dockerfile`, or the ADO setup template. The source of truth is `cli/azd/go.mod`.
 
 ### Debugging (with VSCode)
 
