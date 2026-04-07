@@ -1,5 +1,9 @@
 # Release History
 
+## 0.1.16-preview (Unreleased)
+
+- [[#7536]](https://github.com/Azure/azure-dev/pull/7536) Deprecated and past-retirement AI model versions and SKUs are now filtered out during model selection in `azd ai agent init`, preventing stale entries from appearing in prompts
+
 ## 0.1.15-preview (2026-03-13)
 
 - [[#7080]](https://github.com/Azure/azure-dev/pull/7080) Fix authentication failures (`AADSTS70043`/`AADSTS700082`) for multi-tenant and guest users by using `UserTenantId` for credential resolution
