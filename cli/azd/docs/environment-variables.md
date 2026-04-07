@@ -9,6 +9,7 @@ Environment variables that can be used to configure `azd` behavior, usually set 
 - `AZD_AUTH_KEY`: The [External Authentication](./external-authentication.md) shared key.
 - `AZD_BUILDER_IMAGE`: The builder docker image used to perform Dockerfile-less builds.
 - `AZD_CONFIG_DIR`: The file path of the user-level configuration directory.
+- `AZD_DEPLOY_TIMEOUT`: Timeout for deployment operations, parsed as an integer number of seconds (for example, `1200`). Defaults to `1200` seconds (20 minutes).
 - `AZD_DEMO_MODE`: If true, enables demo mode. This hides personal output, such as subscription IDs, from being displayed in output.
 - `AZD_FORCE_TTY`: If true, forces `azd` to write terminal-style output.
 - `AZD_IN_CLOUDSHELL`: If true, `azd` runs with Azure Cloud Shell specific behavior.
@@ -19,3 +20,12 @@ For tools that are auto-acquired by `azd`, you are able to configure the followi
 - `AZD_BICEP_TOOL_PATH`: The Bicep tool override path. The direct path to `bicep` or `bicep.exe`.
 - `AZD_GH_TOOL_PATH`: The `gh` tool override path. The direct path to `gh` or `gh.exe`.
 - `AZD_PACK_TOOL_PATH`: The `pack` tool override path. The direct path to `pack` or `pack.exe`.
+
+## App Service Slot Deployments
+
+These variables control deployment slot behavior for Azure App Service targets. In all variable names,
+`{SERVICE}` is the uppercase service name from `azure.yaml` with hyphens replaced by underscores
+(e.g., service `my-api` → `MY_API`).
+
+- `AZD_DEPLOY_{SERVICE}_SLOT_NAME`: When multiple deployment slots exist, auto-selects the named slot instead of prompting. The value must match an existing slot name.
+- `AZD_DEPLOY_{SERVICE}_IGNORE_SLOTS`: If true, bypasses all slot detection logic and deploys directly to the main app, even when deployment slots exist. Takes precedence over `AZD_DEPLOY_{SERVICE}_SLOT_NAME`.
