@@ -1956,14 +1956,31 @@ Returns available AI models for a subscription.
     - `locations` (repeated string)
     - `capabilities` (repeated string)
     - `formats` (repeated string)
-    - `statuses` (repeated string)
+    - `statuses` (repeated string): filters by **version-level** lifecycle status (e.g. `"GenerallyAvailable"`,
+      `"Preview"`). Filtering is applied before aggregation, so returned versions, locations, and model metadata
+      reflect only matching versions. Deprecated versions (lifecycle status `"Deprecated"` or past inference
+      deprecation date) and deprecated SKUs are automatically excluded regardless of this filter.
     - `exclude_model_names` (repeated string)
 - **Response:** _ListModelsResponse_
   - `models` (repeated _AiModel_)
+    - `name` (string)
+    - `format` (string)
+    - `lifecycle_status` (string): **deprecated** — always empty. Use `versions[].lifecycle_status` instead.
+    - `capabilities` (repeated string)
+    - `versions` (repeated _AiModelVersion_)
+      - `version` (string)
+      - `is_default` (bool)
+      - `skus` (repeated _AiModelSku_)
+      - `lifecycle_status` (string): version-level lifecycle status (e.g. `"GenerallyAvailable"`, `"Preview"`)
+    - `locations` (repeated string)
 
 If `filter.locations` is empty, models are listed across all subscription locations.
 When `filter.locations` is provided, it limits which models are returned, but each returned model still contains canonical
 `locations`.
+
+> **Breaking change (PR #7536):** `AiModel.lifecycle_status` is now always empty. Callers reading this field
+> should migrate to `AiModelVersion.lifecycle_status`. Additionally, `AiModelFilterOptions.statuses` now
+> filters on version lifecycle status before aggregation (previously it matched the model-level field).
 
 #### ResolveModelDeployments
 
