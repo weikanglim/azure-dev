@@ -19,3 +19,9 @@ For tools that are auto-acquired by `azd`, you are able to configure the followi
 - `AZD_BICEP_TOOL_PATH`: The Bicep tool override path. The direct path to `bicep` or `bicep.exe`.
 - `AZD_GH_TOOL_PATH`: The `gh` tool override path. The direct path to `gh` or `gh.exe`.
 - `AZD_PACK_TOOL_PATH`: The `pack` tool override path. The direct path to `pack` or `pack.exe`.
+
+## Debug variables
+
+> **Warning**: Debug variables are unsupported and may change or be removed without notice.
+
+- `AZD_DEBUG_MSAL_CACHE`: If true, logs MSAL cache metadata before and after login and around the first silent token acquisitions, including account identifiers and usernames, while hashing cache keys and token secrets. Requires `--debug` flag to print to terminal.
