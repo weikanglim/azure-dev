@@ -1,5 +1,9 @@
 # Release History
 
+## Unreleased
+
+- [[#7741]](https://github.com/Azure/azure-dev/pull/7741) Remove `-e` shorthand for `--project-endpoint` to resolve collision with azd's reserved global `-e/--environment` flag. Use `--project-endpoint` explicitly.
+
 
 ## 0.0.4-preview (2026-03-17)
 

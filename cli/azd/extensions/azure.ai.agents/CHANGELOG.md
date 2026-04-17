@@ -1,5 +1,12 @@
 # Release History
 
+## Unreleased
+
+- [[#7741]](https://github.com/Azure/azure-dev/pull/7741) Remove `-e` shorthand for `--environment` to resolve collision with azd's reserved global `-e/--environment` flag. Use `--environment` explicitly.
+- [[#7763]](https://github.com/Azure/azure-dev/pull/7763) Fix developer RBAC pre-flight gaps: auto-assign the Azure AI User role when missing, add an explicit `roleAssignments/write` permission check (Contributor is insufficient — use Owner, User Access Administrator, or Role Based Access Control Administrator), and detect ABAC-mode ACR registries where classic roles like AcrPush do not apply. The error for missing role-write permission includes an `AZD_AGENT_SKIP_ROLE_ASSIGNMENTS=true` opt-out.
+- [[#7747]](https://github.com/Azure/azure-dev/pull/7747) Pull agent RBAC identity from the agent version object instead of Microsoft Graph, improving reliability in environments with restricted Graph access.
+- [[#7765]](https://github.com/Azure/azure-dev/pull/7765) Improve invalid manifest error message to guide users to check for a missing `template` field.
+
 ## 0.1.15-preview (2026-03-13)
 
 - [[#7080]](https://github.com/Azure/azure-dev/pull/7080) Fix authentication failures (`AADSTS70043`/`AADSTS700082`) for multi-tenant and guest users by using `UserTenantId` for credential resolution
