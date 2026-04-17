@@ -554,6 +554,39 @@ Usage: `azd x watch`
 
 - `--cwd` - The extension directory, defaults to `.`.
 
+#### Excluding Files from the Watcher
+
+`azd x watch` supports a `.azdxignore` file (gitignore syntax) placed at the project root to exclude files and
+directories from triggering rebuilds. This is useful for suppressing noise from build output, test artifacts,
+`node_modules/`, and other non-source files.
+
+The watcher also respects patterns from your `.gitignore`. Both files apply additively — a file ignored by
+either is excluded from watch events.
+
+**Example `.azdxignore`:**
+
+```gitignore
+# Ignore build output
+dist/
+build/
+*.tmp
+
+# Ignore test artifacts
+coverage/
+**/*.test.js
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# But keep the launch config
+!.vscode/launch.json
+```
+
+Both files use standard [gitignore syntax](https://git-scm.com/docs/gitignore). Missing files are handled
+gracefully — if neither `.azdxignore` nor `.gitignore` exists, all changes in the watched directory trigger
+a rebuild.
+
 ---
 
 `pack` - Package your extension to prepare for publishing.

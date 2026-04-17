@@ -1,5 +1,12 @@
 # Release History
 
+## Unreleased
+
+### Features Added
+
+- [[#7697]](https://github.com/Azure/azure-dev/pull/7697) Add `.azdxignore` file support for `azd x watch`, allowing users to exclude files and directories from the file watcher using gitignore syntax. Patterns from `.gitignore` are also respected additively.
+- [[#7746]](https://github.com/Azure/azure-dev/pull/7746) Add local Bicep preflight check for Azure reserved resource names. When a predicted resource name matches Azure's reserved-word restrictions (e.g. names containing `MICROSOFT`, `WINDOWS`, or equal to `AZURE`, `BING`, `XBOX`), a warning is displayed before deployment. See [Reserved resource names](https://learn.microsoft.com/azure/azure-resource-manager/templates/error-reserved-resource-name). Color highlighting has also been added to preflight warnings to improve readability.
+
 ## 1.23.10 (2026-03-16)
 
 ### Bugs Fixed

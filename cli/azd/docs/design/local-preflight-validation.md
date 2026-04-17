@@ -121,6 +121,7 @@ localPreflight.AddCheck(func(ctx context.Context, valCtx *validationContext) (*P
 | Check | What It Does | Severity |
 |---|---|---|
 | Role assignment permissions | Detects `Microsoft.Authorization/roleAssignments` in the snapshot and verifies the current principal has `roleAssignments/write` permission on the subscription. | Warning |
+| Reserved resource names | Inspects all predicted resource names in the snapshot and warns when a name segment matches Azure's published reserved-word restrictions. Covers exact matches (`AZURE`, `BING`, `XBOX`, `OFFICE365`, `SHAREPOINT`), substrings (`MICROSOFT`, `WINDOWS`), and prefixes (`LOGIN`). ARM template expressions (names beginning with `[`) are skipped since they contain unexpanded provider namespaces. See [Reserved resource names](https://learn.microsoft.com/azure/azure-resource-manager/templates/error-reserved-resource-name). | Warning |
 
 ## UX Presentation
 
