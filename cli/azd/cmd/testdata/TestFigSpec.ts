@@ -3529,7 +3529,7 @@ const completionSpec: Fig.Spec = {
 		},
 		{
 			name: ['--no-prompt'],
-			description: 'Accepts the default value instead of prompting, or it fails if there is no default.',
+			description: 'Runs without prompts. Uses existing values; fails if any required value is missing, unclear, or needs confirmation.',
 			isPersistent: true,
 		},
 		{

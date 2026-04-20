@@ -40,7 +40,8 @@ func NewRootCommand() *cobra.Command {
 		&rootFlags.NoPrompt,
 		"no-prompt",
 		false,
-		"Accepts the default value instead of prompting, or it fails if there is no default.",
+		"Runs without prompts. Uses existing values; "+
+			"fails if any required value is missing, unclear, or needs confirmation.",
 	)
 
 	rootCmd.AddCommand(newSwapCommand(rootFlags))
